@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cẩm nang AWS — Nền tảng, dịch vụ cốt lõi &amp; vận hành hệ thống</title>
+<style>
+:root{
+  --ink:#16324c; --body:#3f5872; --muted:#6d8093; --accent:#b06a10; --accent-soft:#a06a1b;
+  --accent-bg:#faf1e2; --accent-border:#ecd9b8; --line:#e3e8ee; --hairline:#edf0f3;
+  --bg:#fcfcfa; --side-bg:#ffffff; --code-bg:#132a43; --code-ink:#d9e6f2; --badge:#14304f;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--body);font-family:"Segoe UI","Inter",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;font-size:15.5px;line-height:1.65;display:flex}
+[id]{scroll-margin-top:28px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+::selection{background:var(--accent-bg)}
+
+/* ---------- Sidebar ---------- */
+aside{width:308px;flex:0 0 308px;background:var(--side-bg);border-right:1px solid var(--line);position:sticky;top:0;align-self:flex-start;height:100vh;overflow-y:auto;padding:26px 22px 40px}
+aside::-webkit-scrollbar{width:8px}
+aside::-webkit-scrollbar-thumb{background:#dfe5ea;border-radius:8px}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.18em;color:var(--ink);text-transform:uppercase;margin:0 0 6px}
+.side-title{font-size:21px;font-weight:800;color:var(--ink);margin:0 0 8px}
+.side-tags{font-size:12.5px;color:var(--muted);margin:0 0 18px;line-height:1.6}
+.searchbox{position:relative;margin-bottom:20px}
+.searchbox input{width:100%;border:1px solid var(--line);background:#f2f4f6;border-radius:10px;padding:10px 12px 10px 34px;font:inherit;font-size:13.5px;color:var(--ink);outline:none}
+.searchbox input:focus{border-color:#c9d4de;background:#fff}
+.searchbox svg{position:absolute;left:11px;top:11px;width:15px;height:15px;stroke:#8a99a8;fill:none;stroke-width:2}
+#q-results{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 6px);background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 10px 28px rgba(22,50,76,.12);max-height:340px;overflow-y:auto;padding:6px;display:none}
+#q-results.open{display:block}
+.res{display:block;width:100%;text-align:left;border:0;background:none;font:inherit;cursor:pointer;padding:8px 10px;border-radius:8px}
+.res:hover{background:var(--accent-bg)}
+.res-t{display:block;font-size:13px;color:var(--ink);line-height:1.45}
+.res-s{display:block;font-size:11px;color:var(--accent);font-weight:700;letter-spacing:.04em;margin-top:2px}
+.res-empty{padding:10px 12px;font-size:13px;color:var(--muted)}
+nav.toc ol{list-style:none;margin:0;padding:0}
+nav.toc li{margin:0}
+.ch-link{display:flex;gap:10px;align-items:baseline;padding:7px 8px;border-radius:8px;color:var(--ink);font-weight:650;font-size:14.5px;line-height:1.4}
+.ch-link:hover{background:#f4f6f8;text-decoration:none}
+.ch-link .num{color:#9aa8b6;font-size:12px;font-weight:700;min-width:22px}
+.ch-link.active{background:var(--accent-bg)}
+.ch-link.active .num{color:var(--accent)}
+ol.subs{margin:2px 0 6px 0;padding:0 0 0 40px}
+.sub-link{display:block;padding:4px 8px;border-radius:6px;font-size:13.5px;color:var(--accent-soft)}
+.sub-link:hover{background:#faf5ec;text-decoration:none}
+
+/* ---------- Main ---------- */
+main{flex:1;min-width:0}
+.page{max-width:880px;padding:52px 56px 80px;margin:0}
+.kicker{color:var(--accent);font-weight:800;font-size:13px;letter-spacing:.14em;text-transform:uppercase;margin:0 0 14px}
+.hero-title{color:var(--ink);font-size:46px;line-height:1.14;font-weight:800;margin:0 0 20px;letter-spacing:-.01em}
+.lede{font-size:19px;line-height:1.6;color:#56708c;max-width:740px;margin:0 0 30px}
+.pipeline{display:flex;flex-wrap:wrap;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:#fff;margin:6px 0 26px}
+.step{flex:1 1 116px;text-align:center;padding:15px 10px;border-left:1px solid var(--line)}
+.step:first-child{border-left:0}
+.step b{display:block;color:var(--ink);font-size:15px;margin-bottom:2px}
+.step span{font-size:12.5px;color:var(--muted)}
+.step.hl{background:var(--accent-bg)}
+.step.hl b{color:var(--accent)}
+
+section.doc{padding:58px 0 8px;border-top:1px solid var(--hairline)}
+.sec-head{display:flex;align-items:center;gap:12px;margin:0 0 6px}
+.badge{background:var(--badge);color:#fff;font-weight:800;font-size:12.5px;padding:3px 9px;border-radius:6px;letter-spacing:.05em}
+.sec-kicker{color:var(--ink);font-weight:800;font-size:12.5px;letter-spacing:.18em;text-transform:uppercase}
+h2{color:var(--ink);font-size:31px;font-weight:800;margin:6px 0 16px;letter-spacing:-.01em}
+h3{color:var(--ink);font-size:20px;font-weight:750;margin:34px 0 10px}
+h4.mini{font-size:12px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;color:var(--accent);margin:24px 0 8px}
+p{margin:10px 0}
+em{color:#51677f}
+ul,ol{margin:10px 0;padding-left:24px}
+li{margin:6px 0}
+li::marker{color:#9db0c1}
+strong{color:var(--ink)}
+
+.tblwrap{border:1px solid var(--line);border-radius:12px;overflow:auto;margin:18px 0;background:#fff}
+table{width:100%;border-collapse:collapse;min-width:660px}
+thead th{text-align:left;font-size:11.5px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:#5c7186;padding:12px 14px;border-bottom:1px solid var(--line);background:#fff;white-space:nowrap}
+tbody td{padding:11px 14px;font-size:14px;vertical-align:top;border-top:1px solid var(--hairline)}
+tbody tr:first-child td{border-top:0}
+td.k{font-weight:700;color:var(--ink);min-width:150px}
+
+pre{background:var(--code-bg);color:var(--code-ink);border-radius:12px;padding:16px 18px;overflow-x:auto;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;line-height:1.6;margin:16px 0}
+pre .cmt{color:#7f9cba}
+code{background:#eef1f4;border-radius:5px;padding:.12em .4em;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.86em;color:#28455f}
+pre code{background:none;padding:0;color:inherit;font-size:inherit}
+
+.note{background:var(--accent-bg);border-left:3px solid var(--accent);border-radius:10px;padding:14px 18px;margin:18px 0;font-size:14.5px}
+.note b{color:var(--ink)}
+.note.warn{background:#fbeeec;border-left-color:#c04b3d}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin:18px 0}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:#fff}
+.card h4{margin:0 0 8px;font-size:15px;color:var(--ink)}
+.card p{margin:0;font-size:13.5px}
+
+/* ---------- Sơ đồ kiến trúc ---------- */
+figure.arch{border:1px solid var(--line);border-radius:14px;padding:20px;background:#fcfdfe;margin:22px 0}
+.flow{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.nd{border:1.5px solid #b9c6d3;background:#fff;border-radius:10px;padding:9px 12px;min-width:118px;text-align:center;font-size:12.5px}
+.nd b{display:block;color:var(--ink);font-size:13.5px}
+.nd span{color:var(--muted);font-size:11.5px}
+.nd.edge{border-color:#d8b47a;background:#fdf6ea}
+.nd.app{border-color:#7f9ab5;background:#eff4f9}
+.nd.db{border-color:#84a98c;background:#eef5f0}
+.nd.sec{border-color:#c08d8d;background:#fbf1f1}
+.ar{color:#9aa8b6;font-weight:800;font-size:15px}
+.vpc{border:1.5px dashed #6c8cab;border-radius:12px;padding:16px 14px 10px;margin-top:16px;position:relative;background:#f7fafc}
+.vpc>.lbl{position:absolute;top:-10px;left:14px;background:#f7fafc;padding:0 8px;font-size:11px;font-weight:800;letter-spacing:.08em;color:#4a6a8a;text-transform:uppercase}
+.azg{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.az{border:1px solid #d5dde5;border-radius:10px;padding:10px;background:#fff}
+.az>.azt{font-size:11px;font-weight:800;color:#7b8b9b;letter-spacing:.06em;margin-bottom:6px;text-transform:uppercase}
+.sn{border-radius:8px;padding:7px 10px;font-size:12.5px;margin:8px 0;border:1px solid}
+.sn b{display:block;font-size:12px}
+.sn.pub{background:#fdf6e9;border-color:#e3c99a}
+.sn.priv{background:#eef3f8;border-color:#c3d2e0}
+.sn.dbn{background:#eef5f0;border-color:#bcd4c1}
+.tag{display:inline-block;background:#fff;border:1px solid rgba(20,48,79,.14);border-radius:5px;padding:1px 7px;margin:3px 4px 0 0;font-size:11.5px;color:#3d556d}
+figcaption{margin-top:12px;font-size:12.5px;color:var(--muted)}
+
+.flash{animation:flashbg 1.8s ease-out}
+@keyframes flashbg{0%{background:#fdeecb;box-shadow:0 0 0 3px rgba(176,106,16,.35)}100%{background:transparent;box-shadow:none}}
+
+footer{margin-top:70px;padding-top:22px;border-top:1px solid var(--hairline);font-size:12.5px;color:var(--muted)}
+
+@media (max-width:980px){
+  body{display:block}
+  aside{width:auto;height:auto;position:static;border-right:0;border-bottom:1px solid var(--line)}
+  .page{padding:32px 20px 60px}
+  .hero-title{font-size:33px}
+  table{min-width:560px}
+}
+@media print{aside{display:none}.page{max-width:none;padding:0}}
+</style>
+</head>
+<body>
+
+<!-- ==================== SIDEBAR ==================== -->
+<aside>
+  <p class="eyebrow">AWS Handbook</p>
+  <h1 class="side-title">Cẩm nang AWS</h1>
+  <p class="side-tags">IAM · VPC · EC2 · S3 · RDS · Lambda · ECS/EKS · CloudWatch · IaC · Bảo mật · Chi phí</p>
+
+  <div class="searchbox">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><line x1="16.5" y1="16.5" x2="21" y2="21"></line></svg>
+    <input id="q" type="text" placeholder="Tìm kiếm (gõ không dấu cũng được)" autocomplete="off">
+    <div id="q-results"></div>
+  </div>
+
+  <nav class="toc">
+    <ol>
+      <li><a class="ch-link" href="#c01"><span class="num">01</span><span>Bắt đầu ở đây — bản đồ AWS</span></a></li>
+      <li><a class="ch-link" href="#c02"><span class="num">02</span><span>Nền tảng: Region · AZ · tài khoản</span></a></li>
+      <li><a class="ch-link" href="#c03"><span class="num">03</span><span>IAM — danh tính &amp; phân quyền</span></a></li>
+      <li><a class="ch-link" href="#c04"><span class="num">04</span><span>Mạng: VPC · DNS · CDN</span></a>
+        <ol class="subs">
+          <li><a class="sub-link" href="#c04-vpc">Kiến trúc VPC &amp; subnet</a></li>
+          <li><a class="sub-link" href="#c04-sg">Security Group vs NACL</a></li>
+          <li><a class="sub-link" href="#c04-connect">Kết nối &amp; VPC Endpoint</a></li>
+          <li><a class="sub-link" href="#c04-edge">Route 53 · CloudFront · ELB</a></li>
+        </ol>
+      </li>
+      <li><a class="ch-link" href="#c05"><span class="num">05</span><span>Compute: EC2 &amp; Auto Scaling</span></a>
+        <ol class="subs">
+          <li><a class="sub-link" href="#c05-instance">Chọn instance &amp; mua đúng giá</a></li>
+          <li><a class="sub-link" href="#c05-asg">Auto Scaling Group</a></li>
+        </ol>
+      </li>
+      <li><a class="ch-link" href="#c06"><span class="num">06</span><span>Lưu trữ: S3 · EBS · EFS</span></a>
+        <ol class="subs">
+          <li><a class="sub-link" href="#c06-s3">S3 chuyên sâu</a></li>
+          <li><a class="sub-link" href="#c06-block">EBS · EFS · FSx</a></li>
+        </ol>
+      </li>
+      <li><a class="ch-link" href="#c07"><span class="num">07</span><span>Cơ sở dữ liệu</span></a>
+        <ol class="subs">
+          <li><a class="sub-link" href="#c07-rds">RDS &amp; Aurora</a></li>
+          <li><a class="sub-link" href="#c07-ddb">DynamoDB</a></li>
+          <li><a class="sub-link" href="#c07-cache">Cache &amp; CSDL chuyên dụng</a></li>
+        </ol>
+      </li>
+      <li><a class="ch-link" href="#c08"><span class="num">08</span><span>Serverless &amp; tích hợp</span></a>
+        <ol class="subs">
+          <li><a class="sub-link" href="#c08-lambda">Lambda chuyên sâu</a></li>
+          <li><a class="sub-link" href="#c08-apigw">API Gateway</a></li>
+          <li><a class="sub-link" href="#c08-queue">SQS · SNS · EventBridge</a></li>
+          <li><a class="sub-link" href="#c08-sfn">Step Functions · Kinesis</a></li>
+        </ol>
+      </li>
+      <li><a class="ch-link" href="#c09"><span class="num">09</span><span>Container: ECS · EKS · ECR</span></a></li>
+      <li><a class="ch-link" href="#c10"><span class="num">10</span><span>Bảo mật &amp; tuân thủ</span></a>
+        <ol class="subs">
+          <li><a class="sub-link" href="#c10-kms">KMS · Secrets · chứng chỉ TLS</a></li>
+          <li><a class="sub-link" href="#c10-detect">Phát hiện &amp; phòng thủ</a></li>
+        </ol>
+      </li>
+      <li><a class="ch-link" href="#c11"><span class="num">11</span><span>Giám sát &amp; vận hành</span></a></li>
+      <li><a class="ch-link" href="#c12"><span class="num">12</span><span>IaC &amp; CI/CD</span></a></li>
+      <li><a class="ch-link" href="#c13"><span class="num">13</span><span>Chi phí &amp; tối ưu</span></a></li>
+      <li><a class="ch-link" href="#c14"><span class="num">14</span><span>HA · DR · Well-Architected</span></a></li>
+      <li><a class="ch-link" href="#c15"><span class="num">15</span><span>Kiến trúc mẫu</span></a></li>
+      <li><a class="ch-link" href="#c16"><span class="num">16</span><span>Dữ liệu &amp; AI/ML</span></a></li>
+      <li><a class="ch-link" href="#c17"><span class="num">17</span><span>CLI cheatsheet</span></a></li>
+      <li><a class="ch-link" href="#c18"><span class="num">18</span><span>Lộ trình học &amp; chứng chỉ</span></a></li>
+      <li><a class="ch-link" href="#c19"><span class="num">19</span><span>Nguồn chính thức &amp; lưu ý</span></a></li>
+    </ol>
+  </nav>
+</aside>
+
+<!-- ==================== MAIN ==================== -->
+<main>
+<div class="page">
+
+<header>
+  <p class="kicker">Từ con số 0 → vận hành hệ thống trên AWS · Tạo 07/2026</p>
+  <h1 class="hero-title">Cẩm nang AWS: Nền tảng, dịch vụ cốt lõi &amp; vận hành hệ thống</h1>
+  <p class="lede">Toàn bộ kiến thức để <em>thiết kế, triển khai và vận hành hạ tầng trên AWS</em> — từ IAM, VPC, EC2, S3 tới serverless, container, bảo mật, giám sát và tối ưu chi phí — kèm sơ đồ kiến trúc mẫu (chương 15) và cheatsheet lệnh (chương 17). Dùng ô tìm kiếm bên trái để tra nhanh bất kỳ dịch vụ, khái niệm hay lệnh nào.</p>
+
+  <div class="pipeline">
+    <div class="step"><b>Định tuyến</b><span>Route 53 · DNS</span></div>
+    <div class="step hl"><b>Biên &amp; CDN</b><span>CloudFront · WAF</span></div>
+    <div class="step"><b>Cân bằng tải</b><span>ALB · NLB</span></div>
+    <div class="step hl"><b>Tính toán</b><span>EC2 · ECS · Lambda</span></div>
+    <div class="step"><b>Dữ liệu</b><span>S3 · RDS · DynamoDB</span></div>
+    <div class="step hl"><b>Bảo mật</b><span>IAM · KMS · GuardDuty</span></div>
+    <div class="step"><b>Giám sát</b><span>CloudWatch · X-Ray</span></div>
+  </div>
+
+  <div class="note"><b>Lưu ý về độ chính xác.</b> Cẩm nang tổng hợp kiến thức từ tài liệu chính thức của AWS đến <strong>đầu năm 2026</strong>. Quota, giá và tính năng thay đổi liên tục — luôn đối chiếu nguồn chính thức (chương 19) trước khi áp dụng vào môi trường production.</div>
+</header>
+
+<!-- ==================== 01 ==================== -->
+<section class="doc" id="c01" data-title="01 · Bắt đầu ở đây">
+  <div class="sec-head"><span class="badge">01</span><span class="sec-kicker">Bắt đầu ở đây</span></div>
+  <h2>Giải mã yêu cầu công việc</h2>
+  <p>Các mô tả công việc và dự án liên quan AWS gần như luôn xoay quanh <strong>7 nhóm việc</strong> dưới đây. Mỗi nhóm ánh xạ thẳng tới các chương trong cẩm nang:</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Cụm từ thường gặp</th><th>Nghĩa là bạn phải làm được</th><th>Chương</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Thiết kế / triển khai hạ tầng trên AWS</td><td>Dựng VPC chuẩn nhiều AZ, chọn compute (EC2 / container / serverless) đúng bài toán, mô tả hạ tầng bằng code (IaC).</td><td>04 · 05 · 09 · 12</td></tr>
+      <tr><td class="k">Đảm bảo HA / khả năng mở rộng</td><td>Multi-AZ ở mọi tầng, ALB + Auto Scaling, RDS Multi-AZ, thiết kế ứng dụng stateless.</td><td>05 · 07 · 14</td></tr>
+      <tr><td class="k">Bảo mật hệ thống cloud</td><td>IAM least-privilege, mã hoá bằng KMS, chặn public S3, bật CloudTrail / GuardDuty, WAF ở biên.</td><td>03 · 06 · 10</td></tr>
+      <tr><td class="k">Giám sát &amp; xử lý sự cố</td><td>CloudWatch metric / alarm / logs, tracing X-Ray, truy cập máy chủ qua SSM, viết runbook.</td><td>11</td></tr>
+      <tr><td class="k">Tối ưu chi phí</td><td>Đọc Cost Explorer, đặt Budgets, dùng Savings Plans / Spot, dọn tài nguyên thừa.</td><td>13</td></tr>
+      <tr><td class="k">Tự động hoá / CI-CD / DevOps</td><td>CloudFormation / Terraform, pipeline build–deploy (GitHub Actions / CodePipeline), blue-green.</td><td>12</td></tr>
+      <tr><td class="k">Backup / Disaster Recovery</td><td>Hiểu 4 mức chiến lược DR theo RTO/RPO, AWS Backup, diễn tập failover định kỳ.</td><td>14</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Bắt đầu trong 60 phút — 5 việc làm ngay</h3>
+  <ol>
+    <li><strong>Tạo tài khoản &amp; khoá root:</strong> bật MFA cho tài khoản root, không dùng root cho việc hằng ngày — tạo user quản trị qua IAM Identity Center (chương 03).</li>
+    <li><strong>Đặt hàng rào chi phí trước tiên:</strong> bật AWS Budgets với cảnh báo (ví dụ 5–10 USD) <em>trước khi</em> tạo bất kỳ tài nguyên nào (chương 13).</li>
+    <li><strong>Cài AWS CLI v2</strong> và chạy <code>aws configure</code>, kiểm tra bằng <code>aws sts get-caller-identity</code> (chương 17).</li>
+    <li><strong>Chọn một Region cố định</strong> để thực hành — với Việt Nam thường là <code>ap-southeast-1</code> (Singapore) — và làm mọi lab trong đó (chương 02).</li>
+    <li><strong>Dựng lab đầu tiên:</strong> 1 VPC chuẩn 2 AZ + 1 EC2 + 1 S3 bucket, rồi xoá sạch sau khi xong (chương 04–06).</li>
+  </ol>
+
+  <h3>Cách dùng cẩm nang</h3>
+  <p>Đọc tuần tự chương 02 → 06 để có nền; các chương sau tra cứu theo nhu cầu. Quy ước trình bày: <strong>bảng</strong> = so sánh nhanh để ra quyết định, <strong>hộp vàng</strong> = lưu ý dễ mất tiền hoặc mất an toàn, <strong>khối code nền tối</strong> = lệnh/cấu hình chạy được. Ô tìm kiếm bên trái quét toàn bộ nội dung, không phân biệt dấu tiếng Việt.</p>
+</section>
+
+<!-- ==================== 02 ==================== -->
+<section class="doc" id="c02" data-title="02 · Nền tảng AWS">
+  <div class="sec-head"><span class="badge">02</span><span class="sec-kicker">Nền tảng</span></div>
+  <h2>Hạ tầng toàn cầu &amp; tổ chức tài khoản</h2>
+
+  <h3>Region · Availability Zone · Edge</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Khái niệm</th><th>Là gì</th><th>Điểm cần nhớ</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Region</td><td>Một khu vực địa lý độc lập (vd <code>ap-southeast-1</code> Singapore, <code>us-east-1</code> N. Virginia). Hơn 30 Region toàn cầu, con số tăng liên tục.</td><td>Đa số tài nguyên gắn với 1 Region; giá và danh mục dịch vụ khác nhau giữa các Region.</td></tr>
+      <tr><td class="k">Availability Zone (AZ)</td><td>Một hoặc nhiều data center độc lập về điện, mạng, làm mát trong 1 Region. Mỗi Region có tối thiểu 3 AZ.</td><td>Nền tảng của HA: trải tài nguyên ra ≥ 2 AZ để chịu lỗi cấp data center.</td></tr>
+      <tr><td class="k">Edge Location / PoP</td><td>Hàng trăm điểm hiện diện toàn cầu phục vụ CloudFront, Route 53, Global Accelerator.</td><td>Đưa nội dung tới gần người dùng; không tự chọn trực tiếp — dịch vụ tự dùng.</td></tr>
+      <tr><td class="k">Local Zone · Wavelength · Outposts</td><td>Hạ tầng AWS đặt gần đô thị lớn / trong mạng 5G / trong data center của bạn.</td><td>Cho bài toán độ trễ cực thấp hoặc hybrid; ít gặp khi mới bắt đầu.</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Chọn Region theo 4 tiêu chí:</strong> gần người dùng (độ trễ), có đủ dịch vụ cần dùng, giá, và yêu cầu pháp lý về vị trí dữ liệu (data residency).</p>
+
+  <h3>Mô hình trách nhiệm chia sẻ (Shared Responsibility)</h3>
+  <p>AWS chịu trách nhiệm bảo mật <em>của</em> cloud; bạn chịu trách nhiệm bảo mật <em>trong</em> cloud:</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>AWS lo (security OF the cloud)</th><th>Bạn lo (security IN the cloud)</th></tr></thead>
+    <tbody>
+      <tr><td>Phần cứng, data center, điện, mạng vật lý</td><td>Dữ liệu, phân loại và mã hoá dữ liệu</td></tr>
+      <tr><td>Hypervisor, hạ tầng ảo hoá, dịch vụ managed</td><td>Hệ điều hành guest, vá lỗi trên EC2</td></tr>
+      <tr><td>Tính sẵn sàng của dịch vụ nền tảng</td><td>IAM, phân quyền, cấu hình Security Group / bucket policy</td></tr>
+      <tr><td>Tuân thủ hạ tầng (ISO, SOC, PCI...)</td><td>Cấu hình ứng dụng an toàn, quản lý secrets, network trong VPC</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Hệ quả thực tế:</b> với EC2 bạn tự vá OS; với RDS/Fargate/Lambda phần đó chuyển dần sang AWS. Càng dùng dịch vụ managed, phần "bạn lo" càng nhỏ — nhưng cấu hình sai IAM/network vẫn luôn là trách nhiệm của bạn.</div>
+
+  <h3>ARN — cách AWS định danh mọi thứ</h3>
+<pre><code>arn:aws:s3:::my-app-assets                 <span class="cmt"># S3 là global trong partition, không có region/account</span>
+arn:aws:iam::123456789012:role/AppRole     <span class="cmt"># IAM là global trong tài khoản</span>
+arn:aws:ec2:ap-southeast-1:123456789012:instance/i-0abc123
+<span class="cmt"># Cấu trúc: arn : partition : service : region : account-id : resource</span></code></pre>
+  <p>Account ID là dãy <strong>12 chữ số</strong>, xuất hiện khắp nơi trong policy và ARN. Xem nhanh danh tính hiện tại: <code>aws sts get-caller-identity</code>.</p>
+
+  <h3>Tổ chức nhiều tài khoản (multi-account)</h3>
+  <p>Chuẩn hiện nay là <strong>tách môi trường theo tài khoản</strong> (prod / staging / dev mỗi cái một account) thay vì nhét chung một tài khoản — để cô lập sự cố, quota, chi phí và phân quyền.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Dịch vụ</th><th>Vai trò</th></tr></thead>
+    <tbody>
+      <tr><td class="k">AWS Organizations</td><td>Gom nhiều tài khoản về một tổ chức: hoá đơn hợp nhất, chia sẻ Savings Plans, quản lý tập trung.</td></tr>
+      <tr><td class="k">OU (Organizational Unit)</td><td>Nhóm tài khoản theo mục đích (Security, Workloads, Sandbox...) để áp chính sách theo nhóm.</td></tr>
+      <tr><td class="k">SCP (Service Control Policy)</td><td>"Hàng rào" cấp tổ chức — giới hạn tối đa những gì một tài khoản được làm (vd cấm rời Region cho phép, cấm tắt CloudTrail). SCP không cấp quyền, chỉ giới hạn.</td></tr>
+      <tr><td class="k">RCP (Resource Control Policy)</td><td>Bổ sung mới hơn (2024): hàng rào áp lên <em>tài nguyên</em> toàn tổ chức (vd chặn S3 bị truy cập từ ngoài Org).</td></tr>
+      <tr><td class="k">Control Tower</td><td>Dựng "landing zone" chuẩn tự động: multi-account + guardrail + log tập trung, đỡ phải tự ráp Organizations.</td></tr>
+      <tr><td class="k">IAM Identity Center</td><td>SSO đăng nhập một cửa vào nhiều tài khoản với permission set (tên cũ: AWS SSO). Xem chương 03.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>5 cách làm việc với AWS</h3>
+  <ul>
+    <li><strong>Console</strong> — giao diện web, hợp để học và thao tác lẻ.</li>
+    <li><strong>CLI</strong> — <code>aws ...</code>, tự động hoá nhanh, bắt buộc phải quen (chương 17).</li>
+    <li><strong>SDK</strong> — thư viện cho Python (boto3), JavaScript, Java, Go... khi gọi AWS từ code ứng dụng.</li>
+    <li><strong>CloudShell</strong> — terminal ngay trong Console, cài sẵn CLI, khỏi cấu hình credential trên máy.</li>
+    <li><strong>IaC</strong> — CloudFormation / CDK / Terraform: cách "đúng" để tạo hạ tầng lâu dài (chương 12).</li>
+  </ul>
+</section>
+
+<!-- ==================== 03 ==================== -->
+<section class="doc" id="c03" data-title="03 · IAM">
+  <div class="sec-head"><span class="badge">03</span><span class="sec-kicker">Danh tính &amp; phân quyền</span></div>
+  <h2>IAM — trái tim của mọi request</h2>
+  <p>Mọi lời gọi API tới AWS đều đi qua IAM để trả lời: <em>ai đang gọi, và họ có được phép làm việc này trên tài nguyên này không?</em> Làm chủ IAM trước khi làm chủ bất kỳ dịch vụ nào khác.</p>
+
+  <h3>Các khối cơ bản</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Khối</th><th>Là gì</th><th>Dùng khi</th></tr></thead>
+    <tbody>
+      <tr><td class="k">User</td><td>Danh tính dài hạn cho một người/ứng dụng, có password hoặc access key.</td><td>Hạn chế dùng — ưu tiên Identity Center cho người, role cho máy.</td></tr>
+      <tr><td class="k">Group</td><td>Nhóm user để gắn policy chung.</td><td>Quản lý quyền theo nhóm (Admins, Developers...).</td></tr>
+      <tr><td class="k">Role</td><td>Danh tính <em>tạm thời</em> được "đội lên" (assume) — không có credential cố định.</td><td>EC2/Lambda gọi AWS, cross-account, CI/CD, federation. Mặc định nên nghĩ đến role trước.</td></tr>
+      <tr><td class="k">Policy</td><td>Tài liệu JSON mô tả quyền. Identity-based (gắn vào user/group/role) hoặc resource-based (gắn vào tài nguyên như S3 bucket, SQS queue).</td><td>Mọi phân quyền đều quy về policy.</td></tr>
+      <tr><td class="k">Permission boundary</td><td>"Trần quyền" gắn lên một user/role — quyền hiệu lực = giao của policy và boundary.</td><td>Cho phép dev tự tạo role nhưng không vượt trần.</td></tr>
+      <tr><td class="k">SCP / RCP</td><td>Hàng rào cấp Organization (chương 02).</td><td>Guardrail toàn công ty.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Giải phẫu một policy JSON</h3>
+<pre><code>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "AllowReadAppBucket",
+    "Effect": "Allow",
+    "Action": ["s3:GetObject", "s3:ListBucket"],
+    "Resource": [
+      "arn:aws:s3:::my-app-assets",
+      "arn:aws:s3:::my-app-assets/*"
+    ],
+    "Condition": { "IpAddress": { "aws:SourceIp": "203.0.113.0/24" } }
+  }]
+}</code></pre>
+  <ul>
+    <li><strong>Effect</strong>: <code>Allow</code> hoặc <code>Deny</code>. <strong>Action</strong>: API được phép, dạng <code>service:Operation</code>, hỗ trợ wildcard (<code>s3:Get*</code>).</li>
+    <li><strong>Resource</strong>: ARN áp dụng — chú ý S3 cần cả ARN bucket (cho <code>ListBucket</code>) lẫn <code>/*</code> (cho object).</li>
+    <li><strong>Condition</strong>: điều kiện theo IP, tag, MFA, Org ID (<code>aws:PrincipalOrgID</code>), TLS (<code>aws:SecureTransport</code>)...</li>
+  </ul>
+
+  <h3>Logic đánh giá quyền</h3>
+  <ol>
+    <li>Có <strong>explicit Deny</strong> ở bất kỳ đâu → từ chối, không cần xét tiếp.</li>
+    <li>Không có Deny, có ít nhất một <strong>Allow</strong> áp dụng → cho phép.</li>
+    <li>Không có gì → <strong>mặc định từ chối</strong> (implicit deny).</li>
+  </ol>
+  <p>Khi có SCP, permission boundary, session policy: quyền hiệu lực là <strong>giao (intersection)</strong> của tất cả các lớp — một lớp không cho là không được.</p>
+
+  <h3>Role &amp; STS — danh tính tạm thời</h3>
+  <p><strong>STS</strong> (Security Token Service) phát credential tạm (AccessKey + Secret + SessionToken, có hạn dùng) khi <code>AssumeRole</code>. Các tình huống kinh điển:</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Tình huống</th><th>Cách chuẩn</th></tr></thead>
+    <tbody>
+      <tr><td class="k">EC2 gọi AWS API</td><td>Gắn <strong>instance profile</strong> (role cho EC2) — SDK/CLI tự lấy credential qua metadata, không bao giờ chép access key vào máy.</td></tr>
+      <tr><td class="k">Lambda / ECS task</td><td><strong>Execution role</strong> (Lambda) / <strong>task role</strong> (ECS) — mỗi hàm/task một role tối thiểu quyền.</td></tr>
+      <tr><td class="k">Cross-account</td><td>Account B tạo role có trust policy tin account A; A <code>AssumeRole</code> sang B.</td></tr>
+      <tr><td class="k">CI/CD (GitHub Actions...)</td><td><strong>OIDC federation</strong>: pipeline assume role bằng token OIDC — không lưu access key trong secrets (mẫu ở chương 12).</td></tr>
+      <tr><td class="k">Kubernetes trên EKS</td><td><strong>IRSA</strong> hoặc <strong>EKS Pod Identity</strong>: từng pod một role riêng (chương 09).</td></tr>
+      <tr><td class="k">Người đăng nhập</td><td><strong>IAM Identity Center</strong>: SSO + permission set, credential ngắn hạn qua <code>aws configure sso</code>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Chuẩn thực hành</h3>
+  <ul>
+    <li>Bật <strong>MFA</strong> cho root và mọi user quản trị; <strong>không bao giờ tạo access key cho root</strong>.</li>
+    <li><strong>Least privilege</strong>: bắt đầu hẹp, mở dần; dùng <strong>IAM Access Analyzer</strong> để tìm quyền thừa và tài nguyên bị chia sẻ ra ngoài.</li>
+    <li>Ưu tiên <strong>role + credential ngắn hạn</strong>; nếu buộc dùng access key dài hạn thì xoay vòng định kỳ (~90 ngày).</li>
+    <li>Chặn theo ngữ cảnh bằng Condition: <code>aws:SourceIp</code>, <code>aws:PrincipalOrgID</code>, bắt buộc <code>aws:MultiFactorAuthPresent</code> cho hành động nhạy cảm.</li>
+    <li>Ở quy mô lớn, cân nhắc <strong>ABAC</strong> (phân quyền theo tag) thay vì nhân bản policy theo từng team.</li>
+    <li>Bật <strong>CloudTrail</strong> ngay từ đầu để mọi lời gọi API đều có vết (chương 10).</li>
+  </ul>
+  <div class="note warn"><b>Sự cố phổ biến số 1:</b> lộ access key khi push code lên GitHub. Phòng bằng cách dùng role/OIDC thay cho key, và quét repo bằng công cụ như Gitleaks / git-secrets trước khi commit.</div>
+</section>
+
+<!-- ========== 04 MẠNG ========== -->
+<section class="doc" id="c04" data-title="04 · Mạng">
+  <div class="sec-head"><span class="badge">04</span><span class="sec-kicker">Mạng: VPC · DNS · CDN</span></div>
+  <h2>VPC — nền móng mọi hệ thống trên AWS</h2>
+  <p>Gần như mọi tài nguyên "có IP" (EC2, RDS, Lambda trong VPC, ECS...) đều nằm trong một <strong>VPC</strong> (Virtual Private Cloud) — mạng riêng ảo do bạn định nghĩa trong một Region. Hiểu chắc VPC là điều kiện tiên quyết trước khi động vào compute.</p>
+
+  <h3 id="c04-vpc">Kiến trúc VPC &amp; subnet</h3>
+  <ul>
+    <li><strong>CIDR</strong> của VPC: từ <code>/16</code> (65.536 IP) đến <code>/28</code> (16 IP). Chọn dải private (10.x, 172.16–31, 192.168) và <em>không trùng</em> với mạng on-premises hay VPC khác sẽ nối về sau.</li>
+    <li><strong>Subnet</strong> thuộc <em>một AZ duy nhất</em>. Trong mỗi subnet, AWS giữ lại <strong>5 địa chỉ IP</strong> (địa chỉ mạng, router, DNS, dự phòng, broadcast) — subnet /24 chỉ còn 251 IP dùng được.</li>
+    <li>Subnet <strong>public</strong> = có route <code>0.0.0.0/0 → Internet Gateway</code>. Subnet <strong>private</strong> = không có route đó (ra Internet phải qua NAT).</li>
+    <li>Mẫu chuẩn production: mỗi AZ có 3 lớp subnet — public (ALB, NAT), private-app (EC2/ECS), private-db (RDS) — trải trên <strong>ít nhất 2 AZ</strong>.</li>
+  </ul>
+
+  <figure class="arch">
+    <div class="flow"><span class="nd edge"><b>Internet</b><span>người dùng</span></span><span class="ar">→</span><span class="nd"><b>Internet Gateway</b><span>gắn vào VPC</span></span></div>
+    <div class="vpc"><div class="lbl">VPC 10.0.0.0/16 · ap-southeast-1</div>
+      <div class="azg">
+        <div class="az"><div class="azt">AZ a</div>
+          <div class="sn pub"><b>Public 10.0.0.0/24</b><span class="tag">ALB</span><span class="tag">NAT GW</span></div>
+          <div class="sn priv"><b>Private-app 10.0.10.0/24</b><span class="tag">EC2 / ECS</span></div>
+          <div class="sn dbn"><b>Private-db 10.0.20.0/24</b><span class="tag">RDS primary</span></div>
+        </div>
+        <div class="az"><div class="azt">AZ b</div>
+          <div class="sn pub"><b>Public 10.0.1.0/24</b><span class="tag">ALB</span><span class="tag">NAT GW</span></div>
+          <div class="sn priv"><b>Private-app 10.0.11.0/24</b><span class="tag">EC2 / ECS</span></div>
+          <div class="sn dbn"><b>Private-db 10.0.21.0/24</b><span class="tag">RDS standby</span></div>
+        </div>
+      </div>
+    </div>
+    <figcaption>Bố cục VPC chuẩn 2 AZ × 3 lớp subnet. App và DB không có IP public; ra Internet qua NAT Gateway ở subnet public.</figcaption>
+  </figure>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Thành phần</th><th>Vai trò</th><th>Điểm phải nhớ</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Internet Gateway (IGW)</td><td>Cửa ra/vào Internet cho VPC</td><td>1 IGW / VPC; miễn phí; chỉ tài nguyên có public IP + route mới ra được.</td></tr>
+      <tr><td class="k">NAT Gateway</td><td>Cho subnet private <em>chủ động</em> ra Internet (kéo package, gọi API ngoài)</td><td>Managed, đặt trong subnet public, tính phí theo giờ <em>và</em> theo GB xử lý. Production: <strong>mỗi AZ một NAT</strong> để tránh chết chùm và phí cross-AZ.</td></tr>
+      <tr><td class="k">Route table</td><td>Bảng định tuyến gắn vào subnet</td><td>Quyết định subnet là public hay private; route cụ thể nhất (longest prefix) thắng.</td></tr>
+      <tr><td class="k">Egress-only IGW</td><td>Như NAT nhưng cho IPv6</td><td>IPv6 ra ngoài được, bên ngoài không chủ động vào được.</td></tr>
+      <tr><td class="k">Elastic IP (EIP)</td><td>IPv4 public cố định</td><td>Gắn cho NAT/NLB/EC2 cần IP không đổi. Lưu ý: mọi IPv4 public đều tính phí theo giờ (từ 02/2024).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="c04-sg">Security Group vs Network ACL</h3>
+  <p>Hai lớp "tường lửa" hay bị nhầm nhất — và là câu hỏi phỏng vấn kinh điển:</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Tiêu chí</th><th>Security Group (SG)</th><th>Network ACL (NACL)</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Gắn vào</td><td>ENI / instance / service (mức tài nguyên)</td><td>Subnet (mức mạng)</td></tr>
+      <tr><td class="k">Trạng thái</td><td><strong>Stateful</strong> — traffic trả về tự động được cho qua</td><td><strong>Stateless</strong> — phải mở cả chiều về (ephemeral ports 1024–65535)</td></tr>
+      <tr><td class="k">Loại rule</td><td>Chỉ <strong>Allow</strong></td><td>Allow <em>và</em> <strong>Deny</strong></td></tr>
+      <tr><td class="k">Thứ tự xét</td><td>Cộng gộp tất cả rule</td><td>Theo số thứ tự, khớp rule đầu tiên là dừng</td></tr>
+      <tr><td class="k">Dùng khi</td><td>Kiểm soát hằng ngày (99% trường hợp)</td><td>Chặn dải IP xấu, cô lập subnet, yêu cầu tuân thủ</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Pattern đáng giá nhất:</b> cho phép <strong>SG tham chiếu SG</strong> thay vì dải IP. Ví dụ: SG của RDS chỉ allow cổng 3306 từ <em>SG của app</em> — sau này app scale bao nhiêu instance cũng không phải sửa rule, và không ai ngoài app vào được DB.</div>
+
+  <h3 id="c04-connect">Kết nối VPC &amp; VPC Endpoint</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Phương án</th><th>Dùng khi</th><th>Điểm phải nhớ</th></tr></thead>
+    <tbody>
+      <tr><td class="k">VPC Peering</td><td>Nối 1–1 hai VPC (cùng/khác account, khác Region đều được)</td><td><strong>Không transitive</strong>: A–B, B–C không có nghĩa A tới được C. CIDR không được trùng. Nhiều VPC → mesh n×(n−1)/2, khó quản.</td></tr>
+      <tr><td class="k">Transit Gateway (TGW)</td><td>Hub trung tâm nối hàng chục VPC + VPN + Direct Connect</td><td>Kiến trúc hub-and-spoke chuẩn cho multi-VPC/multi-account; tính phí theo attachment + GB.</td></tr>
+      <tr><td class="k">Gateway Endpoint</td><td>Gọi <strong>S3 / DynamoDB</strong> từ subnet private</td><td><strong>Miễn phí</strong>, chỉ là entry trong route table. Luôn tạo — tiết kiệm hẳn phí NAT cho traffic S3.</td></tr>
+      <tr><td class="k">Interface Endpoint (PrivateLink)</td><td>Gọi các dịch vụ AWS khác (SSM, ECR, Secrets Manager...) hoặc dịch vụ của bên khác qua mạng riêng</td><td>Là ENI trong subnet của bạn; tính phí theo giờ + GB. Bắt buộc khi instance private cần SSM mà không có NAT.</td></tr>
+      <tr><td class="k">Site-to-Site VPN</td><td>Nối văn phòng/on-prem qua Internet (IPsec)</td><td>Dựng nhanh, băng thông ~1,25 Gbps/tunnel, độ trễ phụ thuộc Internet.</td></tr>
+      <tr><td class="k">Direct Connect (DX)</td><td>Đường truyền riêng vật lý về AWS</td><td>Ổn định, độ trễ thấp, 1–100 Gbps; triển khai mất nhiều tuần. Kết hợp VPN làm dự phòng.</td></tr>
+      <tr><td class="k">Client VPN</td><td>Máy cá nhân của dev/vận hành vào VPC</td><td>Managed OpenVPN; thay cho bastion khi cần truy cập rộng.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="c04-edge">Route 53 · CloudFront · ELB — lớp tiếp nhận traffic</h3>
+  <p><strong>Route 53</strong> — DNS managed (SLA 100%):</p>
+  <ul>
+    <li><strong>Hosted zone</strong> public (tên miền Internet) hoặc private (phân giải nội bộ trong VPC).</li>
+    <li><strong>Alias record</strong> ưu việt hơn CNAME: trỏ thẳng tới tài nguyên AWS (ALB, CloudFront, S3 website...), dùng được ở <em>zone apex</em> (example.com trần) và <strong>miễn phí truy vấn</strong>.</li>
+    <li><strong>Routing policies</strong>: Simple · Weighted (chia % — canary) · Latency (region gần nhất) · <strong>Failover</strong> (kết hợp health check làm DR) · Geolocation (theo nước) · Geoproximity · Multivalue (trả nhiều IP khỏe) · IP-based.</li>
+    <li><strong>Health check</strong> giám sát endpoint từ bên ngoài, có thể gắn CloudWatch alarm và dùng làm điều kiện failover.</li>
+  </ul>
+  <p><strong>CloudFront</strong> — CDN với hàng trăm điểm biên (edge location):</p>
+  <ul>
+    <li><strong>Origin</strong> là S3 (khóa truy cập trực tiếp bằng <strong>OAC</strong> — Origin Access Control) hoặc bất kỳ HTTP origin nào (ALB, API GW).</li>
+    <li><strong>Cache behavior</strong> theo path pattern (vd <code>/static/*</code> cache lâu, <code>/api/*</code> không cache); kiểm soát bằng TTL + cache policy; xả cache bằng <em>invalidation</em>.</li>
+    <li>HTTPS với chứng chỉ ACM — chứng chỉ cho CloudFront <strong>bắt buộc tạo ở us-east-1</strong>.</li>
+    <li>Chạy code tại biên: <strong>CloudFront Functions</strong> (JS siêu nhẹ, sửa header/redirect) và <strong>Lambda@Edge</strong> (logic nặng hơn).</li>
+    <li>Phát nội dung giới hạn bằng <strong>signed URL / signed cookie</strong>.</li>
+    <li>Anh em cùng nhà: <strong>Global Accelerator</strong> — không cache, cho traffic vào mạng xương sống AWS qua 2 IP anycast tĩnh; hợp với TCP/UDP, game, IP whitelist.</li>
+  </ul>
+  <p><strong>Elastic Load Balancing</strong> — 3 loại đang dùng:</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Loại</th><th>Tầng</th><th>Chọn khi</th></tr></thead>
+    <tbody>
+      <tr><td class="k">ALB — Application LB</td><td>L7 (HTTP/HTTPS, gRPC)</td><td>Web/API: định tuyến theo host/path/header, target là instance · IP · <strong>Lambda</strong>, tích hợp xác thực OIDC/Cognito, gắn WAF. Mặc định cho ứng dụng web.</td></tr>
+      <tr><td class="k">NLB — Network LB</td><td>L4 (TCP/UDP/TLS)</td><td>Hiệu năng rất cao, độ trễ thấp, <strong>IP tĩnh/EIP theo AZ</strong> (ALB không có), TLS passthrough, làm đích cho PrivateLink.</td></tr>
+      <tr><td class="k">GWLB — Gateway LB</td><td>L3 (GENEVE)</td><td>Chèn appliance bảo mật bên thứ ba (firewall, IDS/IPS) vào đường traffic.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="mini">Classic Load Balancer là thế hệ cũ — chỉ còn gặp ở hệ thống di sản. Tính năng chung đáng nhớ: health check theo target group, cross-zone load balancing, connection draining (deregistration delay), sticky session.</p>
+</section>
+
+<!-- ========== 05 COMPUTE ========== -->
+<section class="doc" id="c05" data-title="05 · Compute">
+  <div class="sec-head"><span class="badge">05</span><span class="sec-kicker">Compute: EC2 &amp; Auto Scaling</span></div>
+  <h2>EC2 — đọc tên là hiểu máy, mua đúng cách là tiết kiệm</h2>
+
+  <h3 id="c05-instance">Chọn instance &amp; mua đúng giá</h3>
+  <p>Tên instance mã hóa đầy đủ thông tin. Ví dụ <code>m7g.2xlarge</code>:</p>
+  <pre><span class="cmt"># m       7        g         .2xlarge</span>
+<span class="cmt"># │       │        │          └─ cỡ máy: 2xlarge = 8 vCPU, 32 GiB (nhân đôi theo bậc)</span>
+<span class="cmt"># │       │        └─ thuộc tính: g = chip Graviton (ARM), a = AMD, i = Intel,</span>
+<span class="cmt"># │       │                        d = kèm NVMe local, n = mạng tăng cường</span>
+<span class="cmt"># │       └─ thế hệ: số càng lớn càng mới — cùng giá, hiệu năng tốt hơn</span>
+<span class="cmt"># └─ họ máy: m = cân bằng (general purpose)</span></pre>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Họ</th><th>Thiên hướng</th><th>Dùng cho</th></tr></thead>
+    <tbody>
+      <tr><td class="k">T (t3, t4g)</td><td>Burstable — CPU "tích điểm" (credit), bùng nổ khi cần</td><td>Dev/test, web nhỏ, workload nhàn rỗi. Hết credit là bị bóp CPU (chế độ unlimited thì tính thêm tiền) — <em>không</em> dùng cho tải CPU cao liên tục.</td></tr>
+      <tr><td class="k">M (m7i, m7g)</td><td>Cân bằng CPU:RAM ≈ 1:4</td><td>Mặc định cho app server, microservice, DB nhỏ.</td></tr>
+      <tr><td class="k">C (c7i, c7g)</td><td>Compute — CPU:RAM ≈ 1:2</td><td>Xử lý nặng CPU: encode, batch, game server, HPC.</td></tr>
+      <tr><td class="k">R / X (r7g, x2idn)</td><td>Memory — 1:8 trở lên</td><td>Cache, in-memory DB, phân tích RAM lớn; X cho SAP HANA.</td></tr>
+      <tr><td class="k">I / D / H</td><td>Storage — NVMe/HDD cục bộ IOPS rất cao</td><td>NoSQL tự vận hành, search, kho dữ liệu cần I/O cục bộ.</td></tr>
+      <tr><td class="k">G / P (g5, p5)</td><td>GPU</td><td>G: đồ họa, inference; P: training ML quy mô lớn.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Graviton (hậu tố g)</b> là chip ARM của AWS — giá/hiệu năng thường tốt hơn đáng kể so với x86 cùng cỡ. Nếu stack của bạn build được cho ARM (đa số ngôn ngữ hiện đại đều ổn), hãy ưu tiên thử trước.</div>
+
+  <p><strong>Các cách mua compute</strong> (mức giảm là con số AWS công bố "lên tới", so với On-Demand):</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Hình thức</th><th>Giảm giá</th><th>Cam kết / rủi ro</th><th>Dùng khi</th></tr></thead>
+    <tbody>
+      <tr><td class="k">On-Demand</td><td>0%</td><td>Không cam kết, tính theo giây (tối thiểu 60s)</td><td>Bắt đầu, tải khó đoán, spike ngắn.</td></tr>
+      <tr><td class="k">Savings Plans</td><td>Compute SP tới ~66% · EC2 Instance SP tới ~72%</td><td>Cam kết $/giờ trong 1 hoặc 3 năm. Compute SP linh hoạt nhất: áp cho EC2 mọi loại + Fargate + Lambda.</td><td>Baseline ổn định — lựa chọn mặc định hiện nay thay cho RI.</td></tr>
+      <tr><td class="k">Reserved Instances</td><td>Standard tới ~72% · Convertible tới ~66%</td><td>Cam kết loại máy/Region 1–3 năm; Convertible đổi được cấu hình.</td><td>Chủ yếu còn dùng cho RDS/ElastiCache/OpenSearch (các dịch vụ chưa có SP).</td></tr>
+      <tr><td class="k">Spot</td><td>Tới ~90%</td><td>AWS đòi lại máy bất kỳ lúc nào, báo trước <strong>2 phút</strong> (qua instance metadata / EventBridge).</td><td>Workload chịu gián đoạn: batch, CI runner, render, node phụ trong EKS/ECS.</td></tr>
+      <tr><td class="k">Dedicated Host / Instance</td><td>—</td><td>Máy chủ vật lý riêng</td><td>License theo socket/core (Windows, Oracle), yêu cầu compliance.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><strong>Những mảnh ghép quanh một EC2 instance:</strong></p>
+  <ul>
+    <li><strong>AMI</strong> — ảnh máy (OS + phần mềm). Tự đóng AMI "golden image" bằng EC2 Image Builder/Packer để scale nhanh; AMI thuộc Region, muốn dùng nơi khác phải copy.</li>
+    <li><strong>User data</strong> — script chạy <em>một lần lúc boot đầu tiên</em> (root): cài agent, join cluster, kéo config.</li>
+    <li><strong>Key pair</strong> — SSH key. Thực hành hiện đại: bỏ SSH mở cổng, dùng <strong>SSM Session Manager</strong> (chương 11).</li>
+    <li><strong>EBS vs Instance store</strong>: EBS là đĩa mạng bền vững, tháo/gắn được; instance store là NVMe vật lý trên host — cực nhanh nhưng <strong>mất trắng khi stop/terminate</strong> → chỉ chứa cache/dữ liệu tạm.</li>
+    <li><strong>IMDSv2</strong> — bắt buộc dùng (chống SSRF đánh cắp credential). Lấy metadata phải có token:</li>
+  </ul>
+  <pre>TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" \
+  -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+curl -H "X-aws-ec2-metadata-token: $TOKEN" \
+  http://169.254.169.254/latest/meta-data/iam/security-credentials/</pre>
+  <ul>
+    <li><strong>Placement group</strong>: <em>cluster</em> (sát nhau — độ trễ thấp, HPC), <em>spread</em> (tách phần cứng — tối đa 7 instance/AZ, cho máy trọng yếu), <em>partition</em> (chia nhóm rack — Kafka/Hadoop).</li>
+  </ul>
+
+  <h3 id="c05-asg">Auto Scaling Group — co giãn và tự chữa lành</h3>
+  <ul>
+    <li><strong>Launch Template</strong> định nghĩa "máy trông thế nào" (AMI, type, SG, user data, IAM role) — có version, thay thế hoàn toàn Launch Configuration cũ.</li>
+    <li>ASG giữ số instance trong khoảng <code>min ≤ desired ≤ max</code>, rải đều nhiều AZ, tự thay máy hỏng.</li>
+    <li><strong>Health check</strong>: mặc định theo EC2 status; bật thêm <strong>ELB health check</strong> để "app chết nhưng OS sống" cũng bị thay.</li>
+    <li><strong>Chính sách scale</strong>:
+      <ul>
+        <li><em>Target tracking</em> — giữ một chỉ số quanh mục tiêu (vd CPU 50%, request/target 1000). Đơn giản, nên dùng đầu tiên.</li>
+        <li><em>Step scaling</em> — cộng/trừ theo bậc alarm.</li>
+        <li><em>Scheduled</em> — theo lịch (giờ hành chính, sự kiện).</li>
+        <li><em>Predictive</em> — ML dự báo theo chu kỳ ngày/tuần.</li>
+      </ul>
+    </li>
+    <li><strong>Warm pool</strong> giữ sẵn instance đã boot (stopped) để scale-out nhanh; <strong>lifecycle hook</strong> chèn bước chờ khi máy vào/ra (cài đặt thêm, rút log trước khi tắt).</li>
+    <li><strong>Instance refresh</strong> — cuốn chiếu thay máy khi đổi Launch Template (rolling update AMI mới).</li>
+    <li>Gắn ASG vào <strong>target group</strong> của ALB: máy mới tự đăng ký, máy bị thu hồi tự rút khỏi LB.</li>
+  </ul>
+
+  <p><strong>Các lựa chọn compute khác</strong> (chi tiết ở chương tương ứng):</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Dịch vụ</th><th>Một dòng tóm tắt</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Lambda</td><td>Chạy hàm theo sự kiện, không quản máy — chương 08.</td></tr>
+      <tr><td class="k">ECS / EKS + Fargate</td><td>Container có/không quản node — chương 09.</td></tr>
+      <tr><td class="k">Elastic Beanstalk</td><td>PaaS cổ điển: đưa code, AWS dựng EC2 + ALB + ASG hộ; phù hợp app truyền thống muốn lên nhanh.</td></tr>
+      <tr><td class="k">App Runner</td><td>Đưa container/source → có HTTPS endpoint tự scale, đơn giản hơn ECS.</td></tr>
+      <tr><td class="k">AWS Batch</td><td>Hàng đợi job batch trên EC2/Fargate/Spot, tự lo hạ tầng.</td></tr>
+      <tr><td class="k">Lightsail</td><td>VPS giá gói cố định — dự án nhỏ, ít cần hệ sinh thái AWS.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ========== 06 LƯU TRỮ ========== -->
+<section class="doc" id="c06" data-title="06 · Lưu trữ">
+  <div class="sec-head"><span class="badge">06</span><span class="sec-kicker">Lưu trữ: S3 · EBS · EFS</span></div>
+  <h2>S3 là trung tâm của gần như mọi kiến trúc</h2>
+
+  <h3 id="c06-s3">S3 chuyên sâu</h3>
+  <ul>
+    <li>Lưu <strong>object</strong> (file + metadata) trong <strong>bucket</strong>; tên bucket duy nhất <em>toàn cầu</em>, còn dữ liệu nằm trong Region bạn chọn.</li>
+    <li>Object tối đa <strong>5 TB</strong>; upload trên 5 GB bắt buộc <strong>multipart upload</strong> (nên dùng từ ~100 MB — CLI tự làm).</li>
+    <li>Độ bền thiết kế <strong>11 số 9</strong> (99,999999999%); đọc-sau-ghi <strong>strong consistency</strong>.</li>
+    <li>Mặc định mọi object được mã hóa server-side (<strong>SSE-S3</strong>); nâng cấp lên SSE-KMS khi cần kiểm soát khóa + audit (chương 10).</li>
+    <li>Dung lượng không giới hạn, trả tiền theo GB lưu + request + data transfer ra.</li>
+  </ul>
+
+  <p><strong>Storage class</strong> — chọn theo tần suất truy cập:</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Class</th><th>Đặc điểm</th><th>Lưu ý</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Standard</td><td>Mặc định, truy cập thường xuyên, ≥3 AZ</td><td>Đắt nhất về lưu trữ, rẻ nhất về truy cập.</td></tr>
+      <tr><td class="k">Intelligent-Tiering</td><td>Tự chuyển tier theo hành vi truy cập</td><td>Phí giám sát nhỏ theo object; lựa chọn "lười mà khôn" khi không đoán được pattern.</td></tr>
+      <tr><td class="k">Standard-IA</td><td>Ít truy cập, ≥3 AZ</td><td>Rẻ hơn để lưu, tính phí lấy dữ liệu; tối thiểu 30 ngày.</td></tr>
+      <tr><td class="k">One Zone-IA</td><td>Như IA nhưng 1 AZ</td><td>Rẻ hơn nữa; chỉ cho dữ liệu tái tạo được.</td></tr>
+      <tr><td class="k">Express One Zone</td><td>Hiệu năng cực cao, 1 AZ, bucket kiểu riêng</td><td>Cho ML/analytics cần độ trễ mili-giây thấp.</td></tr>
+      <tr><td class="k">Glacier Instant Retrieval</td><td>Lưu trữ lạnh, lấy ra tức thì</td><td>Tối thiểu 90 ngày; cho archive thỉnh thoảng cần ngay (ảnh y tế, media cũ).</td></tr>
+      <tr><td class="k">Glacier Flexible Retrieval</td><td>Lấy ra sau vài phút → vài giờ</td><td>Tối thiểu 90 ngày; backup ít đụng.</td></tr>
+      <tr><td class="k">Glacier Deep Archive</td><td>Rẻ nhất, lấy ra ~12 giờ+</td><td>Tối thiểu 180 ngày; lưu trữ tuân thủ 7–10 năm.</td></tr>
+    </tbody>
+  </table></div>
+
+  <p><strong>Tính năng phải biết:</strong></p>
+  <ul>
+    <li><strong>Versioning</strong> — giữ mọi phiên bản, cứu khỏi ghi đè/xóa nhầm; xóa chỉ tạo delete marker. Kết hợp <strong>MFA Delete</strong> cho bucket tối quan trọng.</li>
+    <li><strong>Lifecycle rule</strong> — tự chuyển class / xóa version cũ / dọn multipart dở dang theo tuổi object. Đây là công tắc tiết kiệm số 1 của S3.</li>
+    <li><strong>Replication</strong> CRR/SRR (khác/cùng Region) — cần bật versioning hai đầu; phục vụ DR, tuân thủ, gom log.</li>
+    <li><strong>Event notification</strong> → EventBridge/SQS/SNS/Lambda: "có file mới thì xử lý" — xương sống của pipeline hướng sự kiện.</li>
+    <li><strong>Presigned URL</strong> — chia sẻ quyền tải/upload có thời hạn: <code>aws s3 presign s3://BUCKET/KEY --expires-in 3600</code>.</li>
+    <li><strong>Static website hosting</strong> — host web tĩnh; production nên đứng sau CloudFront + OAC và khóa bucket private.</li>
+    <li><strong>Object Lock (WORM)</strong> — chống xóa/sửa trong thời hạn (compliance, chống ransomware); <strong>Access Point</strong> — nhiều "cửa" policy riêng cho một bucket lớn.</li>
+  </ul>
+  <div class="note warn"><b>Bảo mật mặc định:</b> từ 04/2023 bucket mới bật sẵn <strong>Block Public Access</strong> và tắt ACL. Đừng tắt BPA cho cả account; nếu cần public hãy đi qua CloudFront. Rò rỉ dữ liệu S3 hầu như luôn do người cấu hình sai, không phải do AWS.</div>
+  <p>Bucket policy mẫu — chặn mọi truy cập không dùng TLS:</p>
+  <pre>{
+  "Version": "2012-10-17",
+  "Statement": [{
+    "Sid": "DenyInsecureTransport",
+    "Effect": "Deny",
+    "Principal": "*",
+    "Action": "s3:*",
+    "Resource": ["arn:aws:s3:::BUCKET", "arn:aws:s3:::BUCKET/*"],
+    "Condition": { "Bool": { "aws:SecureTransport": "false" } }
+  }]
+}</pre>
+
+  <h3 id="c06-block">EBS · EFS · FSx — đĩa khối và file system</h3>
+  <p><strong>EBS</strong> — đĩa mạng gắn cho EC2 (mỗi volume nằm trong <em>một AZ</em>):</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Loại</th><th>Hiệu năng</th><th>Dùng cho</th></tr></thead>
+    <tbody>
+      <tr><td class="k">gp3</td><td>Baseline 3.000 IOPS + 125 MB/s <em>độc lập dung lượng</em>, mua thêm tới 16.000 IOPS / 1.000 MB/s</td><td>Mặc định cho mọi thứ. Rẻ hơn gp2 ~20% — migrate gp2 → gp3 là "tiền rơi".</td></tr>
+      <tr><td class="k">gp2</td><td>IOPS tỉ lệ theo GB (3 IOPS/GB)</td><td>Thế hệ cũ, chỉ còn gặp ở hệ thống chưa chuyển.</td></tr>
+      <tr><td class="k">io1 / io2 Block Express</td><td>IOPS cam kết, io2 BE tới 256.000 IOPS, độ bền cao hơn</td><td>Database nặng I/O; hỗ trợ <strong>Multi-Attach</strong> (nhiều instance cùng AZ, cần cluster-aware FS).</td></tr>
+      <tr><td class="k">st1 / sc1</td><td>HDD throughput / cold</td><td>Log, big data tuần tự / dữ liệu lạnh. Không boot được.</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Snapshot</strong> là bản chụp <em>incremental</em> lưu trên S3 (ẩn); copy được sang Region/account khác → nền tảng backup &amp; DR. Tự động hóa bằng <strong>Data Lifecycle Manager</strong> hoặc <strong>AWS Backup</strong>.</li>
+    <li>Bật <strong>mã hóa mặc định EBS</strong> theo Region (một checkbox) — mọi volume/snapshot mới tự mã hóa KMS.</li>
+    <li>Resize/đổi loại volume <em>online</em> được (sau đó grow filesystem trong OS).</li>
+    <li>Volume gốc mặc định bị xóa khi terminate instance — kiểm tra cờ <code>DeleteOnTermination</code> với dữ liệu quan trọng.</li>
+  </ul>
+  <p><strong>EFS</strong> — NFS v4 managed, <em>nhiều instance mount cùng lúc, đa AZ</em>, co giãn tự động, trả theo GB dùng. Có class Standard / One Zone và lifecycle tự đẩy file nguội sang <strong>IA / Archive</strong> (Archive ra mắt 2023) để giảm mạnh chi phí; throughput mode nên để <em>Elastic</em>. Dùng cho thư mục chia sẻ, CMS, và persistent volume cho EKS (EFS CSI driver).</p>
+  <p><strong>FSx</strong> — file system "hàng hiệu" managed: <strong>FSx for Windows</strong> (SMB, join AD), <strong>FSx for Lustre</strong> (HPC/ML, liên kết S3), <strong>FSx for NetApp ONTAP</strong> (đa giao thức, snapshot/clone doanh nghiệp), <strong>FSx for OpenZFS</strong>.</p>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>S3</th><th>EBS</th><th>EFS</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Kiểu</td><td>Object (HTTP API)</td><td>Block (đĩa gắn máy)</td><td>File (NFS)</td></tr>
+      <tr><td class="k">Ai truy cập</td><td>Bất kỳ đâu có quyền</td><td>1 instance (trừ Multi-Attach), cùng AZ</td><td>Nhiều instance, đa AZ</td></tr>
+      <tr><td class="k">Hợp với</td><td>Media, backup, data lake, web tĩnh</td><td>Boot disk, database</td><td>Nội dung chia sẻ, home dir, k8s PV</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ========== 07 CƠ SỞ DỮ LIỆU ========== -->
+<section class="doc" id="c07" data-title="07 · Cơ sở dữ liệu">
+  <div class="sec-head"><span class="badge">07</span><span class="sec-kicker">Cơ sở dữ liệu</span></div>
+  <h2>Chọn đúng CSDL cho đúng bài toán</h2>
+
+  <h3 id="c07-rds">RDS &amp; Aurora — quan hệ, managed</h3>
+  <p><strong>RDS</strong> vận hành hộ database quan hệ: cài đặt, vá, backup, failover. Engine: MySQL, PostgreSQL, MariaDB, SQL Server, Oracle, Db2 (thêm từ 2023). Bạn không có quyền SSH vào máy DB.</p>
+  <ul>
+    <li><strong>Backup tự động</strong>: bật sẵn, giữ 0–35 ngày, cho <strong>point-in-time restore</strong> đến từng giây; <strong>manual snapshot</strong> giữ vô thời hạn, copy/share được.</li>
+    <li><strong>Parameter group / Option group</strong> — chỉnh cấu hình engine thay cho file config.</li>
+    <li><strong>Storage autoscaling</strong> — tự nới dung lượng khi gần đầy.</li>
+    <li><strong>RDS Proxy</strong> — pool kết nối managed; gần như bắt buộc khi Lambda nói chuyện với RDS (tránh cạn connection), hỗ trợ IAM auth.</li>
+    <li><strong>IAM database authentication</strong> — đăng nhập DB bằng token IAM 15 phút thay password (MySQL/PostgreSQL).</li>
+  </ul>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Cấu hình</th><th>Bản chất</th><th>Điểm phải nhớ</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Multi-AZ (instance)</td><td>1 standby <em>đồng bộ</em> ở AZ khác</td><td>Chỉ để failover (tự động, đổi DNS ~1–2 phút), <strong>không đọc được</strong> từ standby. Là chuẩn tối thiểu cho production.</td></tr>
+      <tr><td class="k">Multi-AZ DB cluster</td><td>1 writer + <strong>2 reader</strong> ở 3 AZ</td><td>Standby <em>đọc được</em>, failover nhanh hơn; MySQL/PostgreSQL.</td></tr>
+      <tr><td class="k">Read Replica</td><td>Bản sao <em>bất đồng bộ</em> (tối đa 15, cùng/khác Region)</td><td>Để scale <strong>đọc</strong> và làm DR; có độ trễ replication; promote được thành DB độc lập. Không phải cơ chế HA cho ghi.</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Aurora</strong> — engine tương thích MySQL/PostgreSQL của AWS, storage tách khỏi compute:</p>
+  <ul>
+    <li>Dữ liệu tự nhân <strong>6 bản trên 3 AZ</strong>, tự vá lỗi; volume tự lớn theo dữ liệu.</li>
+    <li>Tới <strong>15 read replica</strong> chung storage (độ trễ rất thấp), failover thường ~30 giây; <strong>reader endpoint</strong> tự cân bằng tải đọc.</li>
+    <li><strong>Serverless v2</strong> — scale theo ACU mịn, và từ 2024 <strong>scale về 0</strong> khi nhàn rỗi → hợp dev/test, tải thưa.</li>
+    <li><strong>Global Database</strong> — replicate sang Region khác với RPO thường ~1 giây, promote nhanh khi DR.</li>
+    <li>Tiện ích riêng: <strong>Backtrack</strong> (tua lui MySQL không cần restore), cloning nhanh copy-on-write, <strong>I/O-Optimized</strong> (giá cố định, khỏi trả phí I/O — lợi khi I/O nặng).</li>
+  </ul>
+
+  <h3 id="c07-ddb">DynamoDB — NoSQL serverless chủ lực</h3>
+  <ul>
+    <li>Key-value/document, độ trễ mili-giây <em>ổn định ở mọi quy mô</em>, không có máy chủ để quản. Item tối đa <strong>400 KB</strong>.</li>
+    <li><strong>Khóa</strong>: partition key (PK) bắt buộc, sort key (SK) tùy chọn. Truy vấn hiệu quả = <code>Query</code> theo PK/SK; <strong>tránh <code>Scan</code></strong> (quét cả bảng).</li>
+    <li>Thiết kế bảng <em>xuất phát từ access pattern</em>, không từ chuẩn hóa quan hệ; mô hình nâng cao "single-table design" gói nhiều entity vào một bảng.</li>
+  </ul>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>GSI — Global Secondary Index</th><th>LSI — Local Secondary Index</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Khóa</td><td>PK + SK <em>khác hẳn</em> bảng chính</td><td>Cùng PK, khác SK</td></tr>
+      <tr><td class="k">Tạo khi nào</td><td>Bất kỳ lúc nào</td><td><strong>Chỉ lúc tạo bảng</strong></td></tr>
+      <tr><td class="k">Capacity</td><td>RCU/WCU riêng</td><td>Dùng chung với bảng; giới hạn 10 GB/partition</td></tr>
+      <tr><td class="k">Consistency đọc</td><td>Eventual</td><td>Chọn được strong</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><strong>Capacity</strong>: <em>On-demand</em> (trả theo request — mặc định nên chọn) vs <em>Provisioned</em> (RCU/WCU + auto scaling — rẻ hơn khi tải đều đoán được).</li>
+    <li>Giới hạn vật lý mỗi partition ~<strong>3.000 RCU / 1.000 WCU</strong> → PK phải phân tán tốt, tránh <em>hot partition</em> (vd đừng lấy ngày hôm nay làm PK cho log toàn hệ thống).</li>
+    <li>Tính năng: <strong>TTL</strong> (tự xóa item hết hạn, miễn phí), <strong>Streams</strong> → Lambda (CDC, hướng sự kiện), <strong>DAX</strong> (cache đọc micro-giây, drop-in), <strong>Global Tables</strong> (multi-Region active-active), <strong>Transactions</strong> (ACID nhiều item), <strong>PITR</strong> 35 ngày, <strong>Export to S3</strong> không tốn RCU, truy vấn kiểu SQL bằng PartiQL.</li>
+  </ul>
+
+  <h3 id="c07-cache">Cache &amp; CSDL chuyên dụng</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>ElastiCache — Redis OSS / Valkey</th><th>ElastiCache — Memcached</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Tính năng</td><td>Cấu trúc dữ liệu phong phú, pub/sub, persistence, replica + Multi-AZ failover, cluster mode</td><td>Key-value thuần, multi-thread, không replica/persistence</td></tr>
+      <tr><td class="k">Chọn khi</td><td>Hầu hết trường hợp: cache, session, leaderboard, rate limit</td><td>Cache siêu đơn giản, chấp nhận mất khi node chết</td></tr>
+    </tbody>
+  </table></div>
+  <p class="mini"><strong>Valkey</strong> (fork mở của Redis, ElastiCache hỗ trợ từ 10/2024) có giá thấp hơn Redis OSS trên ElastiCache — lựa chọn mặc định tốt cho cluster mới. Cần Redis <em>bền như database</em> (Multi-AZ, durable write) thì xem <strong>MemoryDB</strong>.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Bài toán</th><th>Dịch vụ nên nghĩ tới đầu tiên</th></tr></thead>
+    <tbody>
+      <tr><td class="k">OLTP quan hệ, transaction, join</td><td>RDS; cần scale đọc lớn/HA cao hơn → Aurora</td></tr>
+      <tr><td class="k">Key-value quy mô lớn, serverless, độ trễ ổn định</td><td>DynamoDB</td></tr>
+      <tr><td class="k">Cache / session / realtime</td><td>ElastiCache (Valkey/Redis)</td></tr>
+      <tr><td class="k">Data warehouse, BI, SQL phân tích</td><td>Redshift (chương 16)</td></tr>
+      <tr><td class="k">Full-text search, log analytics</td><td>OpenSearch Service (chương 16)</td></tr>
+      <tr><td class="k">Document kiểu MongoDB</td><td>DocumentDB</td></tr>
+      <tr><td class="k">Đồ thị quan hệ (social, fraud)</td><td>Neptune</td></tr>
+      <tr><td class="k">Time-series (IoT, metrics)</td><td>Timestream</td></tr>
+      <tr><td class="k">Cassandra managed</td><td>Keyspaces</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Kinh nghiệm chọn:</b> bắt đầu bằng RDS PostgreSQL trừ khi có lý do rõ ràng. Chuyển DynamoDB khi access pattern là key-value rõ ràng và cần scale/serverless; thêm cache khi số đo (metrics) cho thấy đọc lặp lại là nút cổ chai — đừng cache vì thói quen.</div>
+</section>
+
+<!-- ========== 08 SERVERLESS ========== -->
+<section class="doc" id="c08" data-title="08 · Serverless">
+  <div class="sec-head"><span class="badge">08</span><span class="sec-kicker">Serverless &amp; tích hợp</span></div>
+  <h2>Lambda và bộ ba nhắn tin SQS · SNS · EventBridge</h2>
+
+  <h3 id="c08-lambda">Lambda chuyên sâu</h3>
+  <ul>
+    <li>Chạy hàm theo <strong>sự kiện</strong>, scale theo số request đồng thời, trả tiền theo <strong>GB-giây</strong> + số request. Cấp RAM 128 MB – 10 GB (CPU tỉ lệ theo RAM — hàm chậm đôi khi <em>rẻ đi</em> khi tăng RAM).</li>
+    <li><strong>Cold start</strong>: lần gọi đầu phải khởi tạo môi trường. Giảm bằng: gói nhẹ, khởi tạo ngoài handler, <strong>provisioned concurrency</strong> (giữ sẵn môi trường ấm, tính phí), hoặc <strong>SnapStart</strong> (khôi phục từ snapshot — Java, và mở rộng cho Python/.NET từ 2024).</li>
+    <li><strong>Version &amp; alias</strong>: publish version bất biến, alias (vd <code>prod</code>) trỏ vào version và <em>chia % traffic</em> giữa 2 version → canary deploy (CodeDeploy tự động hóa được).</li>
+    <li><strong>Layers</strong> — đóng gói thư viện dùng chung; <strong>container image</strong> tới 10 GB thay cho zip.</li>
+    <li>Lambda trong <strong>VPC</strong>: gắn ENI vào subnet private — muốn ra Internet phải có NAT; gọi dịch vụ AWS nên đi VPC endpoint.</li>
+    <li>Xử lý lỗi async: retry 2 lần → <strong>DLQ</strong> hoặc <strong>Destinations</strong> (đích riêng cho thành công/thất bại — nên dùng hơn DLQ).</li>
+    <li><strong>Event source mapping</strong> — Lambda tự poll SQS/Kinesis/DynamoDB Streams theo batch; chỉnh batch size, batch window, và <code>ReportBatchItemFailures</code> để chỉ retry item hỏng.</li>
+    <li><strong>Function URL</strong> — HTTPS endpoint trực tiếp không cần API GW (auth IAM hoặc public); hỗ trợ <strong>response streaming</strong>.</li>
+  </ul>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Giới hạn (mặc định)</th><th>Giá trị</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Thời gian chạy tối đa</td><td>15 phút</td></tr>
+      <tr><td class="k">RAM</td><td>128 MB – 10.240 MB</td></tr>
+      <tr><td class="k">/tmp</td><td>512 MB – 10 GB</td></tr>
+      <tr><td class="k">Gói triển khai</td><td>Zip 50 MB (250 MB giải nén) · container image 10 GB</td></tr>
+      <tr><td class="k">Concurrency / Region</td><td>1.000 (soft limit — xin nâng được)</td></tr>
+      <tr><td class="k">Payload</td><td>6 MB sync · 256 KB async</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="c08-apigw">API Gateway — cửa ngõ API</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>HTTP API</th><th>REST API</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Giá / độ trễ</td><td>Rẻ hơn ~70%, nhanh hơn</td><td>Đắt hơn, nhiều tính năng hơn</td></tr>
+      <tr><td class="k">Auth</td><td>IAM, <strong>JWT authorizer</strong> (Cognito/OIDC), Lambda authorizer</td><td>IAM, Cognito, Lambda authorizer, mutual TLS</td></tr>
+      <tr><td class="k">Riêng có</td><td>—</td><td><strong>API key + usage plan</strong> (bán API theo quota), request validation, caching, WAF, private API trong VPC, canary stage</td></tr>
+      <tr><td class="k">Chọn</td><td>Mặc định cho API mới gọi Lambda</td><td>Khi cần đúng các tính năng cột bên</td></tr>
+    </tbody>
+  </table></div>
+  <p class="mini">Timeout tích hợp mặc định 29 giây (từ 2024 có thể xin nâng cho REST API regional). Ngoài ra còn <strong>WebSocket API</strong> cho realtime hai chiều. Nhu cầu GraphQL → <strong>AppSync</strong>.</p>
+
+  <h3 id="c08-queue">SQS · SNS · EventBridge — tách rời hệ thống</h3>
+  <p><strong>SQS</strong> — hàng đợi kéo (pull), bộ giảm chấn giữa các service:</p>
+  <ul>
+    <li>Standard: gần như vô hạn throughput, <strong>at-least-once</strong>, có thể sai thứ tự → consumer phải <em>idempotent</em>.</li>
+    <li><strong>Visibility timeout</strong>: message "tàng hình" khi đang được xử lý; xử lý xong phải <em>xóa</em>, quá hạn thì message hiện lại (retry tự nhiên).</li>
+    <li><strong>Long polling</strong> (WaitTimeSeconds tới 20s) — giảm request rỗng, luôn bật.</li>
+    <li><strong>DLQ</strong> + <code>maxReceiveCount</code>: message hỏng N lần thì sang hàng đợi chết để mổ xẻ; có nút <em>redrive</em> đẩy lại sau khi sửa lỗi.</li>
+    <li><strong>FIFO</strong> (đuôi <code>.fifo</code>): đúng thứ tự + exactly-once trong 5 phút (dedup); thứ tự tính <em>theo MessageGroupId</em>; ~300 msg/s (3.000 với batch), cao hơn nữa ở chế độ high-throughput.</li>
+    <li>Message tối đa 256 KB; retention tới 14 ngày; delay queue/message timer hoãn phát tới 15 phút.</li>
+  </ul>
+  <p><strong>SNS</strong> — pub/sub đẩy (push): 1 publish → <strong>fan-out</strong> tới nhiều subscriber (SQS, Lambda, HTTP, email, SMS). Pattern chuẩn: <em>SNS → nhiều SQS</em> (mỗi consumer một queue, bền, retry riêng); <strong>filter policy</strong> để mỗi subscriber chỉ nhận message liên quan; có FIFO topic ghép FIFO queue.</p>
+  <p><strong>EventBridge</strong> — event bus định tuyến theo <em>nội dung</em> sự kiện (pattern JSON):</p>
+  <ul>
+    <li>Bus: <em>default</em> (sự kiện AWS: "EC2 stopped", "CodePipeline failed"...), <em>custom</em> (sự kiện nghiệp vụ của bạn), <em>partner</em> (SaaS: Datadog, Stripe...).</li>
+    <li>Rule khớp pattern → tới 5 target/rule (Lambda, Step Functions, SQS, API destination gọi webhook ngoài...).</li>
+    <li><strong>Scheduler</strong> — cron/rate managed (thay cho CloudWatch Events cũ); <strong>Pipes</strong> — nối point-to-point nguồn→đích kèm filter/enrich; <strong>archive &amp; replay</strong> — phát lại sự kiện cũ khi consumer từng lỗi; <strong>schema registry</strong>.</li>
+  </ul>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>SQS</th><th>SNS</th><th>EventBridge</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Mô hình</td><td>Queue — 1 nhóm consumer kéo</td><td>Pub/sub — đẩy tới mọi subscriber</td><td>Bus — định tuyến theo rule/pattern</td></tr>
+      <tr><td class="k">Mạnh về</td><td>Đệm tải, retry, thứ tự (FIFO)</td><td>Fan-out tức thời, SMS/email</td><td>Tích hợp sự kiện AWS/SaaS, filter nội dung, lịch</td></tr>
+      <tr><td class="k">Câu thần chú</td><td>"Việc cần làm"</td><td>"Chuyện vừa xảy ra — báo mọi người"</td><td>"Chuyện vừa xảy ra — ai khớp rule thì nhận"</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 id="c08-sfn">Step Functions · Kinesis</h3>
+  <p><strong>Step Functions</strong> — điều phối workflow bằng state machine (JSON/Workflow Studio): các state <code>Task</code>, <code>Choice</code>, <code>Parallel</code>, <code>Map</code> (fan-out xử lý mảng), <code>Wait</code>; <strong>retry/catch từng bước</strong> — đừng tự viết vòng retry trong code; <code>waitForTaskToken</code> chờ callback (duyệt tay, hệ thống ngoài). Tích hợp trực tiếp 200+ dịch vụ AWS không cần Lambda trung gian.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>Standard</th><th>Express</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Thời lượng tối đa</td><td>1 năm</td><td>5 phút</td></tr>
+      <tr><td class="k">Ngữ nghĩa</td><td>Exactly-once workflow</td><td>At-least-once, throughput rất cao</td></tr>
+      <tr><td class="k">Tính phí</td><td>Theo transition</td><td>Theo số lần chạy + thời lượng</td></tr>
+      <tr><td class="k">Dùng cho</td><td>Quy trình nghiệp vụ dài, cần audit từng bước</td><td>Xử lý sự kiện/IoT dồn dập, pipeline ngắn</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>Kinesis Data Streams</strong> — streaming realtime, giữ thứ tự theo partition key, <em>nhiều consumer đọc lại được</em> (retention 24h mặc định, tới 365 ngày). Capacity theo <strong>shard</strong>: mỗi shard nhận 1 MB/s hoặc 1.000 record/s, phát 2 MB/s (chia sẻ giữa consumer; <em>enhanced fan-out</em> cấp riêng 2 MB/s mỗi consumer); có chế độ on-demand tự co giãn.</p>
+  <p><strong>Amazon Data Firehose</strong> (tên cũ Kinesis Data Firehose) — "ống dẫn" không code: buffer theo thời gian/dung lượng rồi đổ vào S3, Redshift, OpenSearch, HTTP endpoint, Splunk...; biến đổi bản ghi bằng Lambda trên đường đi. Không lưu lại để đọc lại — chỉ giao hàng. Phân tích SQL streaming → <strong>Managed Service for Apache Flink</strong>.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>Kinesis Streams</th><th>SQS</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Đọc lại / nhiều consumer</td><td>Có — mỗi consumer tự giữ vị trí đọc</td><td>Không — message xử lý xong là xóa</td></tr>
+      <tr><td class="k">Thứ tự</td><td>Theo shard/partition key</td><td>Chỉ FIFO queue</td></tr>
+      <tr><td class="k">Hợp với</td><td>Analytics realtime, clickstream, log pipeline</td><td>Tách rời service, hàng đợi công việc</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ========== 09 CONTAINER ========== -->
+<section class="doc" id="c09" data-title="09 · Container">
+  <div class="sec-head"><span class="badge">09</span><span class="sec-kicker">Container: ECS · EKS · ECR</span></div>
+  <h2>Chạy container: chọn ECS hay EKS, node hay Fargate</h2>
+
+  <h3>ECR — registry ảnh container</h3>
+  <ul>
+    <li>Private/public registry managed, ảnh mã hóa, phân quyền IAM. Đăng nhập:</li>
+  </ul>
+  <pre>aws ecr get-login-password --region ap-southeast-1 \
+  | docker login --username AWS --password-stdin ACCOUNT_ID.dkr.ecr.ap-southeast-1.amazonaws.com</pre>
+  <ul>
+    <li><strong>Image scanning</strong>: basic (miễn phí, khi push) hoặc enhanced (Amazon Inspector quét liên tục cả OS + thư viện ngôn ngữ).</li>
+    <li><strong>Lifecycle policy</strong> tự xóa tag cũ (registry phình rất nhanh); <strong>immutable tags</strong> chặn ghi đè tag — nên bật cho prod; replication cross-Region/cross-account; pull-through cache cho Docker Hub.</li>
+  </ul>
+
+  <h3>ECS — cách "kiểu AWS", đơn giản</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Khái niệm</th><th>Nghĩa</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Cluster</td><td>Nhóm tài nguyên chạy container (Fargate hoặc EC2).</td></tr>
+      <tr><td class="k">Task definition</td><td>"Bản thiết kế" task: image, CPU/RAM, port, env, log. Phân biệt <strong>task role</strong> (quyền của <em>code</em> gọi AWS API) với <strong>execution role</strong> (quyền của <em>ECS agent</em>: kéo ảnh ECR, ghi log, đọc secret).</td></tr>
+      <tr><td class="k">Task</td><td>Một lần chạy task definition (1+ container).</td></tr>
+      <tr><td class="k">Service</td><td>Giữ N task luôn chạy, gắn ALB/NLB, rolling update, auto scaling.</td></tr>
+      <tr><td class="k">Capacity provider</td><td>Nguồn máy: FARGATE, FARGATE_SPOT, hoặc ASG EC2 — trộn được theo tỉ lệ.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>Fargate</th><th>EC2 launch type</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Quản node</td><td>Không — khai CPU/RAM là chạy</td><td>Bạn quản ASG, AMI, vá OS</td></tr>
+      <tr><td class="k">Giá</td><td>Theo vCPU + GB cấp phát; Fargate Spot rẻ hơn nhiều</td><td>Theo EC2 — rẻ hơn khi nhồi máy full, dùng Spot/SP</td></tr>
+      <tr><td class="k">Giới hạn</td><td>Không GPU, không daemon truy cập host</td><td>GPU, cần tinh chỉnh máy → chọn EC2</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>Network mode <strong>awsvpc</strong>: mỗi task một ENI + SG riêng — target group của ALB dùng kiểu <code>ip</code>.</li>
+    <li><strong>Deployment circuit breaker</strong>: deploy hỏng thì tự dừng và rollback — luôn bật.</li>
+    <li><strong>ECS Exec</strong> — "docker exec" vào task đang chạy qua SSM để debug.</li>
+    <li><strong>Service Connect</strong> — service discovery + mesh nhẹ giữa các service ECS.</li>
+  </ul>
+
+  <h3>EKS — Kubernetes managed</h3>
+  <ul>
+    <li>AWS vận hành <strong>control plane</strong> (đa AZ, tính phí theo giờ/cluster); bạn lo data plane: <strong>managed node group</strong> (phổ biến nhất), self-managed, <strong>Fargate</strong> (theo pod), hoặc <strong>Karpenter</strong> — autoscaler mã nguồn mở của AWS tự chọn/gộp instance tối ưu, thay thế Cluster Autoscaler trong nhiều hệ thống mới.</li>
+    <li><strong>Xác thực</strong>: nay dùng <strong>EKS Access Entries</strong> gắn IAM principal ↔ quyền Kubernetes qua API (thay cách sửa ConfigMap <code>aws-auth</code> dễ hỏng). Pod gọi AWS API: <strong>IRSA</strong> (IAM Roles for Service Accounts, qua OIDC) hoặc <strong>EKS Pod Identity</strong> (mới hơn, 2023 — cấu hình gọn hơn).</li>
+    <li><strong>Add-on</strong> quản qua EKS: VPC CNI (pod nhận IP thật trong VPC — để ý cạn IP subnet), CoreDNS, kube-proxy, EBS/EFS CSI driver.</li>
+    <li><strong>AWS Load Balancer Controller</strong>: Ingress → ALB, Service LoadBalancer → NLB.</li>
+    <li>Nâng cấp <strong>từng minor version một</strong> (control plane trước, node sau); phiên bản hết chuẩn bị rơi vào <em>extended support</em> tính thêm phí — lên lịch upgrade định kỳ.</li>
+    <li><strong>EKS Auto Mode</strong> (12/2024): AWS tự quản node, autoscaling, networking — đưa EKS gần trải nghiệm "khai pod là chạy".</li>
+  </ul>
+  <pre>aws eks update-kubeconfig --name my-cluster --region ap-southeast-1
+kubectl get nodes</pre>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>ECS</th><th>EKS</th><th>App Runner</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Độ phức tạp</td><td>Thấp</td><td>Cao (đổi lại hệ sinh thái K8s)</td><td>Thấp nhất</td></tr>
+      <tr><td class="k">Chọn khi</td><td>Team nhỏ, all-in AWS, muốn ít vận hành</td><td>Đã dùng K8s, cần Helm/operator/multi-cloud, team có kinh nghiệm</td><td>Web app/API đơn giản từ container/source</td></tr>
+      <tr><td class="k">Phí nền</td><td>Không (trả theo task/node)</td><td>Phí control plane theo giờ</td><td>Theo tài nguyên</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Lời khuyên thực dụng:</b> nếu tổ chức chưa có K8s, ECS + Fargate cho 80% giá trị với 20% độ phức tạp. Chọn EKS vì <em>cần Kubernetes</em>, đừng chọn vì "cho oách CV" — chi phí vận hành trả bằng thời gian của bạn.</div>
+</section>
+
+<!-- ========== 10 BẢO MẬT ========== -->
+<section class="doc" id="c10" data-title="10 · Bảo mật">
+  <div class="sec-head"><span class="badge">10</span><span class="sec-kicker">Bảo mật &amp; tuân thủ</span></div>
+  <h2>Mã hóa, bí mật, và bộ máy phát hiện</h2>
+
+  <h3 id="c10-kms">KMS · Secrets Manager · ACM · WAF</h3>
+  <p><strong>KMS</strong> — dịch vụ quản lý khóa, trung tâm của mọi mã hóa:</p>
+  <ul>
+    <li>Khóa <strong>symmetric</strong> là mặc định; khóa <em>không bao giờ rời KMS</em> — mọi thao tác qua API (có vết CloudTrail).</li>
+    <li><strong>AWS managed key</strong> (aws/s3, aws/ebs... — miễn phí, ít kiểm soát) vs <strong>customer managed key</strong> (phí theo tháng + request; tự đặt key policy, bật/tắt, dùng cross-account).</li>
+    <li>Mã hóa trực tiếp tối đa <strong>4 KB</strong>; dữ liệu lớn dùng <strong>envelope encryption</strong>: <code>GenerateDataKey</code> → mã hóa cục bộ bằng data key → lưu data key đã mã hóa cạnh dữ liệu. Các dịch vụ AWS đều làm sẵn kiểu này.</li>
+    <li>Quyền = IAM policy <em>giao</em> với <strong>key policy</strong> (+ <strong>grants</strong> cho ủy quyền tạm). Bật <strong>automatic rotation</strong> mỗi năm cho CMK.</li>
+    <li><strong>Multi-Region keys</strong> — cùng key ID ở nhiều Region (DR, Global Tables). Xóa khóa phải chờ <strong>7–30 ngày</strong> (cửa hối hận) — mất khóa là mất dữ liệu vĩnh viễn.</li>
+  </ul>
+  <div class="tblwrap"><table>
+    <thead><tr><th></th><th>Secrets Manager</th><th>SSM Parameter Store</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Giá</td><td>Tính phí theo secret/tháng + API call</td><td>Standard <strong>miễn phí</strong> (advanced có phí)</td></tr>
+      <tr><td class="k">Rotation</td><td><strong>Tự động, tích hợp sẵn RDS/Redshift/DocumentDB</strong> (Lambda rotate hộ)</td><td>Tự viết nếu muốn</td></tr>
+      <tr><td class="k">Kích thước</td><td>64 KB</td><td>4 KB (standard) / 8 KB (advanced)</td></tr>
+      <tr><td class="k">Khác</td><td>Cross-account, replicate multi-Region</td><td>Phân cấp theo path (/app/prod/db), rẻ cho config thường</td></tr>
+      <tr><td class="k">Chọn</td><td>Credential DB, API key cần xoay vòng</td><td>Config + secret đơn giản (SecureString cũng mã hóa KMS)</td></tr>
+    </tbody>
+  </table></div>
+  <p><strong>ACM</strong> — chứng chỉ TLS public <strong>miễn phí</strong>, validate qua DNS (Route 53 một nút bấm) và <strong>tự gia hạn</strong>; gắn cho ALB/NLB, CloudFront (bắt buộc us-east-1), API Gateway. Không xuất private key ra ngoài (trừ ACM Private CA — dựng CA nội bộ, có phí).</p>
+  <p><strong>Lớp chống tấn công ứng dụng:</strong></p>
+  <ul>
+    <li><strong>WAF</strong> — web ACL gắn vào CloudFront, ALB, API GW (REST), AppSync, Cognito: managed rule groups (SQLi, XSS, bot, IP reputation), rule tự viết, <strong>rate-based rule</strong> chặn IP spam request.</li>
+    <li><strong>Shield Standard</strong> — chống DDoS L3/L4 <em>miễn phí, tự động</em> cho mọi người; <strong>Shield Advanced</strong> — trả phí, bảo vệ sâu hơn + đội phản ứng SRT + bảo hiểm chi phí scale do DDoS.</li>
+    <li><strong>Firewall Manager</strong> — áp WAF/Shield/SG policy đồng loạt toàn Organization; <strong>Network Firewall</strong> — tường lửa managed mức VPC (rule Suricata) cho egress filtering.</li>
+  </ul>
+
+  <h3 id="c10-detect">Phát hiện &amp; phòng thủ — bật gì, xem gì</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Dịch vụ</th><th>Trả lời câu hỏi</th><th>Ghi chú</th></tr></thead>
+    <tbody>
+      <tr><td class="k">CloudTrail</td><td>"Ai gọi API gì, lúc nào, từ đâu?"</td><td>90 ngày event history miễn phí; tạo <strong>org trail</strong> đổ về S3 (bucket khóa chặt) để giữ lâu. Data events (S3 object, Lambda invoke) rất chi tiết nhưng tính phí. CloudTrail Lake truy vấn SQL.</td></tr>
+      <tr><td class="k">GuardDuty</td><td>"Có hành vi độc hại không?"</td><td>Phân tích CloudTrail + VPC Flow Logs + DNS bằng ML/threat intel; các protection plan mở rộng: S3, EKS, RDS, Lambda, Malware, Runtime Monitoring. Bật là có giá trị ngay, không cần agent.</td></tr>
+      <tr><td class="k">Inspector</td><td>"Máy/ảnh nào dính CVE?"</td><td>Quét lỗ hổng liên tục EC2 (qua SSM), ECR image, Lambda.</td></tr>
+      <tr><td class="k">Macie</td><td>"S3 có dữ liệu nhạy cảm (PII) lộ không?"</td><td>ML phát hiện PII + cảnh báo bucket public.</td></tr>
+      <tr><td class="k">Security Hub</td><td>"Tình hình chung thế nào?"</td><td>Gom finding các dịch vụ trên + chấm điểm theo chuẩn (AWS Foundational Security Best Practices, CIS).</td></tr>
+      <tr><td class="k">Detective</td><td>"Điều tra finding này thế nào?"</td><td>Đồ thị hành vi để lần theo chuỗi sự kiện.</td></tr>
+      <tr><td class="k">Config</td><td>"Cấu hình có đúng chuẩn không, đã thay đổi ra sao?"</td><td>Ghi lịch sử cấu hình tài nguyên + Config Rules (vd "SG không được mở 22 ra 0.0.0.0/0") + auto remediation qua SSM.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Checklist bảo mật tối thiểu cho account mới:</b> ① MFA cho root + admin, khóa access key của root · ② Bật Block Public Access toàn account cho S3 · ③ Bật GuardDuty + Security Hub mọi Region đang dùng · ④ Org trail về S3 riêng · ⑤ Bật mã hóa mặc định EBS + SSE-KMS cho bucket quan trọng · ⑥ Không mở SSH/RDP ra 0.0.0.0/0 — dùng SSM Session Manager · ⑦ Ép IMDSv2 trên mọi EC2 · ⑧ Đặt AWS Budgets cảnh báo chi phí (chương 13).</div>
+</section>
+
+<!-- ========== 11 VẬN HÀNH ========== -->
+<section class="doc" id="c11" data-title="11 · Giám sát & vận hành">
+  <div class="sec-head"><span class="badge">11</span><span class="sec-kicker">Giám sát &amp; vận hành</span></div>
+  <h2>CloudWatch, X-Ray và Systems Manager</h2>
+
+  <h3>CloudWatch — metrics, alarms, logs</h3>
+  <ul>
+    <li><strong>Metrics</strong>: dịch vụ AWS tự phát (EC2 mặc định điểm 5 phút; bật <em>detailed monitoring</em> để có 1 phút). EC2 <strong>không có sẵn</strong> RAM/disk usage — cài <strong>CloudWatch Agent</strong>. Tự đẩy metric bằng <code>PutMetricData</code> hoặc <strong>Embedded Metric Format</strong> (ghi log là ra metric — rẻ và tiện cho Lambda).</li>
+    <li><strong>Alarms</strong>: ngưỡng trên metric — "M trên N datapoints" để tránh nhấp nháy; action gọi SNS / Auto Scaling / EC2 stop-recover; <strong>composite alarm</strong> gộp nhiều alarm giảm nhiễu; nhớ xử lý trạng thái <code>INSUFFICIENT_DATA</code> (thiếu dữ liệu đôi khi chính là sự cố).</li>
+    <li><strong>Logs</strong>: log group / log stream; <strong>retention mặc định là vĩnh viễn — đặt lại ngay</strong> (30–90 ngày cho app log) kẻo hóa đơn phình. <em>Metric filter</em> biến pattern log thành metric để đặt alarm (vd đếm "ERROR"); <em>subscription filter</em> stream log sang Lambda/Firehose/OpenSearch; <em>Live Tail</em> xem log realtime.</li>
+  </ul>
+  <p>Truy vấn <strong>Logs Insights</strong> — câu lệnh dùng hằng ngày:</p>
+  <pre>fields @timestamp, @message
+| filter @message like /ERROR/
+| sort @timestamp desc
+| limit 20</pre>
+  <ul>
+    <li><strong>Dashboards</strong> — ghép metric/log/alarm nhiều Region một màn hình; <strong>Synthetics canary</strong> — script "giả người dùng" gọi endpoint 24/7; <strong>RUM</strong> — đo trải nghiệm người dùng thật; <strong>Application Signals</strong> — APM tự động (SLO, service map) cho ứng dụng có instrument.</li>
+    <li><strong>X-Ray</strong> — distributed tracing: nhìn một request xuyên qua API GW → Lambda → DynamoDB, tìm điểm chậm/lỗi; hướng chuẩn mở dùng <strong>ADOT</strong> (AWS Distro for OpenTelemetry).</li>
+  </ul>
+
+  <h3>Systems Manager (SSM) — vận hành đội máy chủ</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Tính năng</th><th>Dùng để</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Session Manager</td><td>Shell vào EC2 <strong>không cần SSH, không mở cổng, không bastion</strong>; phân quyền IAM, ghi lại phiên vào S3/CloudWatch Logs để audit.</td></tr>
+      <tr><td class="k">Run Command</td><td>Chạy lệnh/script trên hàng loạt máy theo tag, không cần đăng nhập từng con.</td></tr>
+      <tr><td class="k">Patch Manager</td><td>Vá OS theo baseline + maintenance window, báo cáo compliance.</td></tr>
+      <tr><td class="k">State Manager</td><td>Giữ cấu hình máy đúng trạng thái mong muốn (agent luôn chạy, cấu hình chuẩn).</td></tr>
+      <tr><td class="k">Automation</td><td>Runbook tự động hóa (vd "chụp snapshot rồi restart", khắc phục finding của Config).</td></tr>
+      <tr><td class="k">Inventory / Fleet Manager</td><td>Kiểm kê phần mềm, xem đội máy qua console.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="mini">Điều kiện: máy có SSM Agent (AMI Amazon Linux/Ubuntu chính chủ có sẵn) + instance profile chứa policy <code>AmazonSSMManagedInstanceCore</code> + đường mạng tới SSM endpoint (NAT hoặc VPC endpoint).</p>
+
+  <h3>Các trợ thủ còn lại</h3>
+  <ul>
+    <li><strong>Trusted Advisor</strong> — khuyến nghị chi phí/bảo mật/giới hạn; bộ check đầy đủ cần Business/Enterprise support.</li>
+    <li><strong>Compute Optimizer</strong> — soi CloudWatch, khuyên đổi size EC2/EBS/Lambda (right-sizing bằng số liệu).</li>
+    <li><strong>Health Dashboard</strong> — sự cố AWS ảnh hưởng đến chính account bạn (kèm EventBridge để tự động phản ứng).</li>
+    <li>Đưa cảnh báo về nơi đội ngũ nhìn thấy: alarm → SNS → <strong>AWS Chatbot</strong> (nay là Amazon Q Developer in chat) đẩy vào Slack/Teams.</li>
+  </ul>
+  <div class="note"><b>Quy trình sự cố gọn:</b> Alarm bắn (đúng ngưỡng, ít nhiễu) → tin nhắn có link dashboard/runbook → xử lý theo runbook (SSM Automation nếu lặp lại) → post-mortem không đổ lỗi, thêm alarm/tự động hóa cho lần sau.</div>
+</section>
+
+<!-- ========== 12 IAC & CI/CD ========== -->
+<section class="doc" id="c12" data-title="12 · IaC & CI/CD">
+  <div class="sec-head"><span class="badge">12</span><span class="sec-kicker">IaC &amp; CI/CD</span></div>
+  <h2>Hạ tầng là code, deploy là pipeline</h2>
+
+  <h3>CloudFormation — IaC "chính chủ"</h3>
+  <p>Template YAML/JSON mô tả tài nguyên → CFN tạo/sửa/xóa cả <strong>stack</strong> theo đúng thứ tự phụ thuộc, lỗi thì tự rollback. Ví dụ tối giản:</p>
+  <pre>AWSTemplateFormatVersion: "2010-09-09"
+Parameters:
+  Env: { Type: String, Default: dev }
+Resources:
+  DataBucket:
+    Type: AWS::S3::Bucket
+    DeletionPolicy: Retain        <span class="cmt"># xóa stack vẫn giữ bucket</span>
+    Properties:
+      BucketName: !Sub "myapp-${Env}-data"
+      VersioningConfiguration: { Status: Enabled }
+Outputs:
+  BucketName: { Value: !Ref DataBucket }</pre>
+  <ul>
+    <li><strong>Change set</strong> — xem trước thay đổi trước khi apply (như <code>terraform plan</code>); <strong>drift detection</strong> — phát hiện ai sửa tay ngoài template.</li>
+    <li><code>DeletionPolicy: Retain/Snapshot</code> cho tài nguyên chứa dữ liệu; <strong>StackSets</strong> — rải một stack ra nhiều account/Region (chuẩn hóa baseline qua Organizations); lint bằng <code>cfn-lint</code>.</li>
+  </ul>
+  <p><strong>CDK</strong> — viết hạ tầng bằng TypeScript/Python..., biên dịch ra CloudFormation. Construct L1 (thô) → L2 (mặc định khôn ngoan) → L3/pattern (cả kiến trúc trong vài dòng). Vòng làm việc: <code>cdk bootstrap</code> (một lần mỗi account/Region) → <code>cdk diff</code> → <code>cdk deploy</code>. Serverless gọn nhẹ có thêm <strong>SAM</strong>.</p>
+
+  <h3>Terraform — chuẩn phổ biến đa cloud</h3>
+  <ul>
+    <li><strong>State</strong> là trái tim: lưu <strong>S3 backend</strong> + khóa chống chạy đôi bằng DynamoDB, hoặc <em>S3 native locking</em> (Terraform ≥ 1.10, khỏi cần bảng DynamoDB).</li>
+    <li>Vòng làm việc: <code>init → plan → apply</code>; hạ tầng có sẵn thì <code>import</code>. Tổ chức code bằng <strong>module</strong>, tách state theo môi trường (dev/staging/prod).</li>
+    <li>Đừng bao giờ sửa tay tài nguyên do Terraform quản — drift sẽ quay lại cắn bạn ở lần apply sau.</li>
+  </ul>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Công cụ</th><th>Chọn khi</th></tr></thead>
+    <tbody>
+      <tr><td class="k">CloudFormation</td><td>Đội thuần AWS, muốn zero tool ngoài, cần StackSets.</td></tr>
+      <tr><td class="k">CDK</td><td>Dev muốn viết hạ tầng bằng ngôn ngữ lập trình, tái sử dụng construct.</td></tr>
+      <tr><td class="k">Terraform</td><td>Đa cloud/đa SaaS, hệ sinh thái module lớn, kỹ năng thị trường rộng — phổ biến nhất trong JD.</td></tr>
+      <tr><td class="k">SAM / Pulumi</td><td>SAM: serverless gọn. Pulumi: như CDK nhưng đa cloud.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>CI/CD trên AWS</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Dịch vụ</th><th>Vai trò</th></tr></thead>
+    <tbody>
+      <tr><td class="k">CodePipeline</td><td>Xâu chuỗi Source → Build → Test → Deploy; source từ GitHub/GitLab (qua CodeConnections) hoặc S3.</td></tr>
+      <tr><td class="k">CodeBuild</td><td>Build/test theo <code>buildspec.yml</code>, trả tiền theo phút build; cũng hay dùng làm runner chạy lệnh bất kỳ.</td></tr>
+      <tr><td class="k">CodeDeploy</td><td>Chiến lược deploy: in-place/rolling cho EC2, <strong>blue-green</strong> cho EC2/ECS, <strong>canary theo alias</strong> cho Lambda — kèm auto rollback theo alarm.</td></tr>
+      <tr><td class="k">CodeArtifact</td><td>Repo package riêng (npm, PyPI, Maven...).</td></tr>
+      <tr><td class="k">CodeCommit</td><td>Git repo — <em>đã ngừng nhận khách hàng mới từ 07/2024</em>; mặc định thị trường là GitHub/GitLab.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Mẫu quan trọng nhất — <strong>GitHub Actions deploy lên AWS bằng OIDC, không lưu access key</strong>:</p>
+  <pre>permissions:
+  id-token: write      <span class="cmt"># cho phép xin token OIDC</span>
+  contents: read
+steps:
+  - uses: actions/checkout@v4
+  - uses: aws-actions/configure-aws-credentials@v4
+    with:
+      role-to-assume: arn:aws:iam::ACCOUNT_ID:role/gha-deploy
+      aws-region: ap-southeast-1
+  - run: aws sts get-caller-identity   <span class="cmt"># đã có credential tạm thời</span></pre>
+  <p class="mini">Phía AWS: tạo OIDC identity provider cho <code>token.actions.githubusercontent.com</code> và role có trust policy giới hạn đúng repo/branch của bạn.</p>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Chiến lược deploy</th><th>Cách chạy</th><th>Đánh đổi</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Rolling</td><td>Thay dần từng phần máy/task</td><td>Không tốn thêm hạ tầng; rollback chậm, hai version chạy song song.</td></tr>
+      <tr><td class="k">Blue-green</td><td>Dựng môi trường mới, chuyển traffic một nhát</td><td>Rollback tức thì; tốn gấp đôi tài nguyên lúc chuyển.</td></tr>
+      <tr><td class="k">Canary</td><td>Đưa 5–10% traffic vào version mới, đo, rồi tăng</td><td>An toàn nhất; cần metric/alarm tốt để quyết định.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ========== 13 CHI PHÍ ========== -->
+<section class="doc" id="c13" data-title="13 · Chi phí">
+  <div class="sec-head"><span class="badge">13</span><span class="sec-kicker">Chi phí &amp; tối ưu</span></div>
+  <h2>Nhìn thấy tiền, hiểu tiền, rồi mới tối ưu tiền</h2>
+
+  <h3>Bộ công cụ nhìn tiền</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Công cụ</th><th>Dùng để</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Cost Explorer</td><td>Biểu đồ chi phí theo dịch vụ/tag/account, forecast; nơi đầu tiên mở khi hóa đơn lạ.</td></tr>
+      <tr><td class="k">AWS Budgets</td><td>Ngân sách + cảnh báo (thực tế <em>và dự báo</em> vượt ngưỡng) → email/SNS; có budget action tự siết. <strong>Việc làm trong ngày đầu tiên của mọi account.</strong></td></tr>
+      <tr><td class="k">Data Exports / CUR</td><td>Xuất chi tiết từng dòng phí về S3, truy vấn bằng Athena — nguồn sự thật cho FinOps.</td></tr>
+      <tr><td class="k">Cost Anomaly Detection</td><td>ML phát hiện chi tiêu bất thường, báo sớm trước khi thành thảm họa cuối tháng.</td></tr>
+      <tr><td class="k">Pricing Calculator</td><td>Ước tính trước khi dựng: <code>calculator.aws</code>.</td></tr>
+      <tr><td class="k">Compute Optimizer</td><td>Khuyến nghị right-size từ số liệu thật (chương 11).</td></tr>
+    </tbody>
+  </table></div>
+  <p class="mini">Kỷ luật nền tảng: <strong>tag mọi tài nguyên</strong> (Project, Env, Owner) + bật cost allocation tags — không tag thì không biết tiền của ai.</p>
+
+  <h3>Nguyên tắc giá phải thuộc lòng</h3>
+  <ul>
+    <li>EC2/RDS tính <strong>theo giây</strong> (tối thiểu 60 giây); Lambda theo GB-giây; S3 theo GB + request.</li>
+    <li><strong>Data transfer</strong>: vào miễn phí, <strong>ra Internet tính tiền</strong> (có 100 GB miễn phí/tháng toàn account); truyền <strong>giữa 2 AZ</strong> tính cả hai chiều — kiến trúc "nói chuyện chéo AZ" nhiều sẽ thấm.</li>
+    <li><strong>NAT Gateway</strong> tính theo giờ + theo GB xử lý — thủ phạm quen mặt của hóa đơn to bất ngờ; giảm bằng Gateway Endpoint (S3/DynamoDB) và Interface Endpoint cho dịch vụ gọi nhiều.</li>
+    <li>Mọi <strong>địa chỉ IPv4 public</strong> tính phí theo giờ (từ 02/2024) — dọn EIP thừa, cân nhắc IPv6/private.</li>
+  </ul>
+
+  <h3>Cam kết để giảm giá</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Bậc thang</th><th>Cách làm</th></tr></thead>
+    <tbody>
+      <tr><td class="k">1. Đo trước</td><td>Chạy On-Demand ~30 ngày, nhìn Cost Explorer xác định <em>baseline</em> ổn định.</td></tr>
+      <tr><td class="k">2. Cam kết baseline</td><td>Mua <strong>Savings Plans</strong> (EC2/Fargate/Lambda) đúng phần chạy 24/7; RDS/ElastiCache/OpenSearch thì mua <strong>Reserved</strong>.</td></tr>
+      <tr><td class="k">3. Spot phần nổi</td><td>Batch, CI, worker chịu gián đoạn → <strong>Spot</strong> (tới ~90%).</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>10 khoản lãng phí kinh điển</h3>
+  <ol>
+    <li>EC2/RDS bật 24/7 mà chỉ dùng giờ hành chính → schedule tắt đêm/cuối tuần (Instance Scheduler, Lambda + EventBridge).</li>
+    <li>EBS volume <em>unattached</em> sau khi terminate máy.</li>
+    <li>Snapshot mồ côi chất đống năm này qua năm khác → Data Lifecycle Manager.</li>
+    <li>EIP không gắn + IPv4 public thừa.</li>
+    <li>Môi trường dev/test dựng xong quên xóa → tag Owner + TTL, dọn định kỳ.</li>
+    <li>CloudWatch Logs không đặt retention.</li>
+    <li>Volume còn gp2 → chuyển gp3 (rẻ hơn ~20%, online).</li>
+    <li>S3 không lifecycle: log/backup nằm mãi ở Standard → IA/Glacier hoặc Intelligent-Tiering.</li>
+    <li>Traffic S3/DynamoDB đi qua NAT thay vì Gateway Endpoint miễn phí.</li>
+    <li>Load balancer, RDS "lab thử tí" không ai nhớ xóa.</li>
+  </ol>
+  <div class="note"><b>Free tier:</b> account tạo <strong>từ 15/07/2025</strong> theo chương trình mới: nhận credit $100 khi mở + tối đa $100 credit qua hoạt động khám phá (tổng tới $200), dùng trong tối đa 6 tháng (gói free plan). Account cũ hơn theo mô hình cũ: 12 tháng miễn phí một số dịch vụ + <em>always free</em> (Lambda 1 triệu request/tháng, DynamoDB 25 GB...). Kiểm tra trang chính thức trước khi dựa vào free tier — điều khoản thay đổi theo thời gian.</div>
+</section>
+
+<!-- ========== 14 HA / DR / WELL-ARCHITECTED ========== -->
+<section class="doc" id="c14" data-title="14 · HA · DR · Well-Architected">
+  <div class="sec-head"><span class="badge">14</span><span class="sec-kicker">HA · DR · Well-Architected</span></div>
+  <h2>Thiết kế cho thất bại: "everything fails, all the time"</h2>
+
+  <h3>Hai con số điều khiển mọi quyết định</h3>
+  <ul>
+    <li><strong>RTO</strong> (Recovery Time Objective) — chịu <em>ngừng dịch vụ</em> tối đa bao lâu.</li>
+    <li><strong>RPO</strong> (Recovery Point Objective) — chịu <em>mất dữ liệu</em> tối đa bao nhiêu (tính bằng thời gian). Hỏi nghiệp vụ hai số này <em>trước</em>, rồi mới chọn kiến trúc — số càng nhỏ, tiền càng lớn.</li>
+  </ul>
+
+  <h3>Khuôn mẫu High Availability trong một Region</h3>
+  <ul>
+    <li><strong>Multi-AZ mọi tầng</strong>: ALB nhiều AZ, ASG rải AZ, RDS Multi-AZ, NAT mỗi AZ. Một AZ chết — hệ thống tự co lại chứ không tắt.</li>
+    <li><strong>Stateless</strong> hóa app: session vào ElastiCache/DynamoDB, file vào S3/EFS → máy nào chết cũng thay được.</li>
+    <li>Health check + <strong>tự chữa lành</strong>: ELB đá máy hỏng, ASG thay máy mới — không ai phải dậy lúc 3 giờ sáng vì một instance.</li>
+    <li>Chống lỗi dây chuyền: <strong>retry với exponential backoff + jitter</strong>, timeout hợp lý, hàng đợi SQS làm giảm chấn, thao tác <em>idempotent</em>.</li>
+    <li>Giới hạn <strong>blast radius</strong>: tách account/môi trường, tách cell, canary deploy.</li>
+  </ul>
+
+  <h3>4 chiến lược Disaster Recovery (theo whitepaper AWS)</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Chiến lược</th><th>RTO / RPO điển hình</th><th>Cách làm &amp; chi phí</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Backup &amp; Restore</td><td>RTO hàng giờ–24h · RPO hàng giờ</td><td>Backup + IaC để dựng lại từ đầu ở Region khác. Rẻ nhất.</td></tr>
+      <tr><td class="k">Pilot Light</td><td>RTO hàng chục phút–giờ · RPO phút</td><td>Dữ liệu replicate sẵn (Aurora Global, S3 CRR), compute tắt — khi cần thì "thổi lửa" scale lên.</td></tr>
+      <tr><td class="k">Warm Standby</td><td>RTO phút · RPO giây–phút</td><td>Bản thu nhỏ chạy thường trực ở Region dự phòng, sự cố thì scale + chuyển DNS.</td></tr>
+      <tr><td class="k">Multi-site Active-Active</td><td>RTO ~0 · RPO ~0</td><td>Hai Region cùng phục vụ (Route 53 latency/failover, DynamoDB Global Tables). Đắt và phức tạp nhất.</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>Đồ nghề: <strong>AWS Backup</strong> (chính sách tập trung + Vault Lock chống xóa + copy cross-Region/account), <strong>Elastic Disaster Recovery (DRS)</strong> replicate máy chủ liên tục, Aurora Global Database / DynamoDB Global Tables, Route 53 failover + health check, S3 replication.</li>
+    <li><strong>DR chưa diễn tập = chưa có DR.</strong> Lên lịch game day khôi phục thật định kỳ.</li>
+  </ul>
+
+  <h3>Well-Architected Framework — 6 trụ cột</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Trụ cột</th><th>Câu hỏi cốt lõi</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Operational Excellence</td><td>Vận hành bằng code, học từ sự cố, cải tiến liên tục?</td></tr>
+      <tr><td class="k">Security</td><td>Danh tính chặt, mã hóa, truy vết, phòng thủ nhiều lớp?</td></tr>
+      <tr><td class="k">Reliability</td><td>Chịu lỗi AZ/Region, tự phục hồi, đã kiểm chứng giới hạn?</td></tr>
+      <tr><td class="k">Performance Efficiency</td><td>Chọn đúng loại tài nguyên, đo đạc, dùng managed/serverless hợp lý?</td></tr>
+      <tr><td class="k">Cost Optimization</td><td>Nhìn thấy chi phí, trả đúng cái cần, tối ưu liên tục?</td></tr>
+      <tr><td class="k">Sustainability</td><td>Giảm tài nguyên thừa, tăng mật độ sử dụng?</td></tr>
+    </tbody>
+  </table></div>
+  <p class="mini"><strong>Well-Architected Tool</strong> (miễn phí trong console) để tự review workload theo bộ câu hỏi chuẩn + các <em>lens</em> chuyên đề (Serverless, SaaS...). Review mỗi 6–12 tháng hoặc trước go-live.</p>
+</section>
+
+<!-- ========== 15 KIẾN TRÚC MẪU ========== -->
+<section class="doc" id="c15" data-title="15 · Kiến trúc mẫu">
+  <div class="sec-head"><span class="badge">15</span><span class="sec-kicker">Kiến trúc mẫu</span></div>
+  <h2>Bốn bản thiết kế gặp đi gặp lại</h2>
+
+  <h3>1 · Web 3 lớp truyền thống (chuẩn production)</h3>
+  <figure class="arch">
+    <div class="flow">
+      <span class="nd edge"><b>Người dùng</b><span>Internet</span></span><span class="ar">→</span>
+      <span class="nd edge"><b>Route 53</b><span>DNS</span></span><span class="ar">→</span>
+      <span class="nd edge"><b>CloudFront + WAF</b><span>CDN · chống tấn công</span></span><span class="ar">→</span>
+      <span class="nd"><b>ALB</b><span>public subnet</span></span><span class="ar">→</span>
+      <span class="nd app"><b>ASG: EC2 / ECS</b><span>private subnet · 2 AZ</span></span><span class="ar">→</span>
+      <span class="nd db"><b>RDS Multi-AZ</b><span>private-db subnet</span></span>
+    </div>
+    <div class="flow" style="margin-top:10px">
+      <span class="nd db"><b>ElastiCache</b><span>cache session/đọc</span></span>
+      <span class="nd"><b>S3</b><span>ảnh, file tĩnh (qua CloudFront)</span></span>
+      <span class="nd"><b>NAT GW ×2</b><span>app ra Internet</span></span>
+      <span class="nd sec"><b>CloudWatch · CloudTrail</b><span>giám sát · audit</span></span>
+    </div>
+    <figcaption>Tầng nào cũng nhân đôi theo AZ; app và DB không có IP public; tĩnh đẩy hết ra CloudFront.</figcaption>
+  </figure>
+  <ul>
+    <li>Scale: ALB + ASG target tracking; đọc DB nặng → thêm read replica / cache-aside với ElastiCache.</li>
+    <li>Bảo mật: SG dây chuyền (ALB → app → DB), secret trong Secrets Manager, vào máy bằng SSM.</li>
+    <li>Đây chính là kiến trúc để luyện tay đầu tiên — dựng được nó bằng Terraform/CDK là qua vòng gửi xe hầu hết JD.</li>
+  </ul>
+
+  <h3>2 · API serverless</h3>
+  <figure class="arch">
+    <div class="flow">
+      <span class="nd edge"><b>Client / SPA</b><span>web · mobile</span></span><span class="ar">→</span>
+      <span class="nd edge"><b>CloudFront</b><span>SPA từ S3 + API</span></span><span class="ar">→</span>
+      <span class="nd"><b>API Gateway</b><span>HTTP API · JWT</span></span><span class="ar">→</span>
+      <span class="nd app"><b>Lambda</b><span>business logic</span></span><span class="ar">→</span>
+      <span class="nd db"><b>DynamoDB</b><span>on-demand</span></span>
+    </div>
+    <div class="flow" style="margin-top:10px">
+      <span class="nd sec"><b>Cognito</b><span>đăng nhập, phát JWT</span></span>
+      <span class="nd"><b>SQS + DLQ</b><span>việc chạy nền</span></span>
+      <span class="nd"><b>EventBridge</b><span>lịch · sự kiện</span></span>
+      <span class="nd sec"><b>X-Ray</b><span>tracing</span></span>
+    </div>
+    <figcaption>Không có máy chủ nào để vá; chi phí gần 0 khi không có traffic.</figcaption>
+  </figure>
+  <ul>
+    <li>Ưu: scale tự động theo request, trả tiền theo dùng, vận hành tối thiểu — hợp startup/MVP/tải thất thường.</li>
+    <li>Nhược cần quản: cold start (provisioned concurrency cho path nóng), giới hạn 15 phút (việc dài → Step Functions/Fargate), quan sát khó hơn (bắt buộc structured log + tracing).</li>
+    <li>Nâng cấp quen thuộc: DynamoDB Streams → Lambda cho side effect; Step Functions cho quy trình nhiều bước.</li>
+  </ul>
+
+  <h3>3 · Landing zone đa account (nền của tổ chức)</h3>
+  <figure class="arch">
+    <div class="flow"><span class="nd sec"><b>Management account</b><span>Organizations · billing hợp nhất — không chạy workload</span></span></div>
+    <div class="vpc" style="margin-top:12px"><div class="lbl">Security OU</div>
+      <div class="flow">
+        <span class="nd sec"><b>Log Archive</b><span>org CloudTrail + Config về S3 khóa chặt</span></span>
+        <span class="nd sec"><b>Audit / Security Tooling</b><span>GuardDuty · Security Hub delegated admin</span></span>
+      </div>
+    </div>
+    <div class="vpc" style="margin-top:12px"><div class="lbl">Infrastructure OU</div>
+      <div class="flow"><span class="nd"><b>Network account</b><span>Transit Gateway · egress tập trung · DX/VPN</span></span></div>
+    </div>
+    <div class="vpc" style="margin-top:12px"><div class="lbl">Workloads OU</div>
+      <div class="flow">
+        <span class="nd app"><b>Dev</b><span>account riêng</span></span>
+        <span class="nd app"><b>Staging</b><span>account riêng</span></span>
+        <span class="nd app"><b>Prod</b><span>account riêng · SCP siết chặt</span></span>
+      </div>
+    </div>
+    <figcaption>Con người đăng nhập qua IAM Identity Center; SCP chặn theo OU; mọi account mới sinh ra đã có sẵn guardrail (Control Tower).</figcaption>
+  </figure>
+  <ul>
+    <li>Vì sao đa account: cô lập sự cố/bảo mật (blast radius), hóa đơn tách bạch, quota riêng, quyền theo môi trường sạch sẽ.</li>
+    <li>Triển khai nhanh bằng <strong>Control Tower</strong>; chuẩn hóa baseline account bằng StackSets/Terraform.</li>
+  </ul>
+
+  <h3>4 · Data pipeline hướng sự kiện</h3>
+  <ul>
+    <li>Luồng chuẩn: nguồn đổ file vào <strong>S3 (raw)</strong> → <strong>EventBridge</strong> bắt sự kiện → <strong>Step Functions</strong> điều phối → <strong>Glue</strong> làm sạch/chuyển Parquet vào <strong>S3 (curated)</strong> → phân tích bằng <strong>Athena</strong>, trực quan hóa <strong>QuickSight</strong>.</li>
+    <li>Realtime thay S3 đầu vào bằng Kinesis/MSK → Flink → S3/OpenSearch (chi tiết dịch vụ ở chương 16).</li>
+    <li>Nguyên tắc: dữ liệu bất biến theo lớp (raw → curated), catalog tập trung (Glue Data Catalog), phân quyền Lake Formation.</li>
+  </ul>
+</section>
+
+<!-- ========== 16 DỮ LIỆU & AI ========== -->
+<section class="doc" id="c16" data-title="16 · Dữ liệu & AI/ML">
+  <div class="sec-head"><span class="badge">16</span><span class="sec-kicker">Dữ liệu &amp; AI/ML</span></div>
+  <h2>Bản đồ nhanh mảng analytics và AI</h2>
+
+  <h3>Analytics</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Dịch vụ</th><th>Một dòng cần nhớ</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Athena</td><td>SQL serverless thẳng trên S3, trả tiền theo <strong>dung lượng quét</strong> → nén + Parquet + partition là rẻ đi nhiều lần.</td></tr>
+      <tr><td class="k">Glue</td><td>ETL serverless (Spark) + <strong>Data Catalog</strong> (metadata trung tâm) + Crawler tự dò schema.</td></tr>
+      <tr><td class="k">Lake Formation</td><td>Phân quyền data lake mức bảng/cột/hàng trên nền Catalog.</td></tr>
+      <tr><td class="k">EMR</td><td>Cluster big data (Spark/Hadoop/Trino) khi cần kiểm soát sâu hơn Glue; có EMR Serverless.</td></tr>
+      <tr><td class="k">MSK</td><td>Kafka managed (có tier Serverless) — khi hệ sinh thái của bạn nói tiếng Kafka.</td></tr>
+      <tr><td class="k">Kinesis / Firehose / Flink</td><td>Streaming "kiểu AWS" — chương 08.</td></tr>
+      <tr><td class="k">OpenSearch Service</td><td>Search + log analytics + dashboard (fork Elasticsearch); có bản Serverless.</td></tr>
+      <tr><td class="k">Redshift</td><td>Data warehouse cột, SQL phân tích quy mô lớn; <strong>Serverless</strong> để khỏi quản cluster; Spectrum truy vấn thẳng S3.</td></tr>
+      <tr><td class="k">QuickSight</td><td>BI dashboard trả theo người dùng, nhúng được vào app.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>AI / ML</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Dịch vụ</th><th>Một dòng cần nhớ</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Bedrock</td><td>Gọi các foundation model (Anthropic Claude, Meta Llama, Mistral, Amazon Nova...) qua một API; kèm <strong>Knowledge Bases</strong> (RAG managed), <strong>Agents</strong>, <strong>Guardrails</strong>. Con đường nhanh nhất đưa GenAI vào app.</td></tr>
+      <tr><td class="k">SageMaker AI</td><td>Nền tảng ML đầy đủ vòng đời: notebook, train, tune, deploy endpoint, pipeline, registry — khi bạn tự xây model.</td></tr>
+      <tr><td class="k">Rekognition</td><td>Phân tích ảnh/video: vật thể, khuôn mặt, moderation.</td></tr>
+      <tr><td class="k">Textract</td><td>Bóc chữ + bảng + form từ tài liệu scan (hơn OCR thường).</td></tr>
+      <tr><td class="k">Comprehend</td><td>NLP: cảm xúc, thực thể, PII trong văn bản.</td></tr>
+      <tr><td class="k">Transcribe / Polly</td><td>Giọng nói → văn bản / văn bản → giọng nói.</td></tr>
+      <tr><td class="k">Translate</td><td>Dịch máy.</td></tr>
+      <tr><td class="k">Amazon Q</td><td>Trợ lý AI: Q Developer (viết code, vận hành AWS — bản kế thừa CodeWhisperer) và Q Business (hỏi đáp trên dữ liệu doanh nghiệp).</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>Chọn lối đi GenAI:</b> cần tính năng AI trong sản phẩm nhanh → <strong>Bedrock</strong> (+ Knowledge Bases cho RAG). Cần train/fine-tune model riêng, kiểm soát sâu → <strong>SageMaker</strong>. Nhu cầu chỉ là "AI xài liền" (OCR, dịch, phân tích ảnh) → dùng thẳng các dịch vụ chuyên dụng phía trên, đừng tự chế.</div>
+</section>
+
+<!-- ========== 17 CLI CHEATSHEET ========== -->
+<section class="doc" id="c17" data-title="17 · CLI cheatsheet">
+  <div class="sec-head"><span class="badge">17</span><span class="sec-kicker">CLI cheatsheet</span></div>
+  <h2>AWS CLI v2 — các lệnh dùng mỗi ngày</h2>
+
+  <h3>Cấu hình &amp; danh tính</h3>
+  <pre>aws configure                          <span class="cmt"># nhập access key (chỉ cho máy cá nhân/dev)</span>
+aws configure sso                      <span class="cmt"># đăng nhập qua IAM Identity Center — cách chuẩn</span>
+aws configure list                     <span class="cmt"># đang dùng credential nào, từ đâu</span>
+aws sts get-caller-identity            <span class="cmt"># "tôi là ai?" — lệnh debug quyền số 1</span>
+export AWS_PROFILE=dev                 <span class="cmt"># chuyển profile cho cả phiên shell</span>
+aws s3 ls --profile prod               <span class="cmt"># hoặc chỉ định theo từng lệnh</span></pre>
+
+  <h3>S3</h3>
+  <pre>aws s3 ls s3://BUCKET/prefix/
+aws s3 mb s3://BUCKET --region ap-southeast-1
+aws s3 cp file.zip s3://BUCKET/backup/
+aws s3 sync ./dist s3://BUCKET/site --delete   <span class="cmt"># deploy web tĩnh: đồng bộ + xóa file thừa</span>
+aws s3 presign s3://BUCKET/report.pdf --expires-in 3600
+aws s3 rm s3://BUCKET/tmp/ --recursive</pre>
+
+  <h3>EC2</h3>
+  <pre>aws ec2 describe-instances \
+  --filters "Name=tag:Env,Values=prod" "Name=instance-state-name,Values=running" \
+  --query 'Reservations[].Instances[].{Id:InstanceId,IP:PrivateIpAddress,Type:InstanceType,AZ:Placement.AvailabilityZone}' \
+  --output table
+aws ec2 start-instances --instance-ids i-0abc123
+aws ec2 stop-instances  --instance-ids i-0abc123
+aws ec2 describe-security-groups --group-ids sg-0abc123</pre>
+
+  <h3>IAM &amp; SSM</h3>
+  <pre>aws iam list-roles --query 'Roles[].RoleName'
+aws iam simulate-principal-policy \
+  --policy-source-arn arn:aws:iam::ACCOUNT_ID:role/app-role \
+  --action-names s3:GetObject                <span class="cmt"># "role này có quyền không?"</span>
+
+aws ssm start-session --target i-0abc123     <span class="cmt"># shell vào máy, không cần SSH</span>
+aws ssm get-parameter --name /app/prod/db_url --with-decryption \
+  --query 'Parameter.Value' --output text</pre>
+
+  <h3>Lambda &amp; logs</h3>
+  <pre>aws lambda invoke --function-name my-fn \
+  --payload '{"id":"123"}' --cli-binary-format raw-in-base64-out out.json
+aws lambda update-function-code --function-name my-fn --zip-file fileb://fn.zip
+aws logs tail /aws/lambda/my-fn --follow --since 1h   <span class="cmt"># xem log trực tiếp</span></pre>
+
+  <h3>ECS · EKS · CloudFormation · DynamoDB</h3>
+  <pre>aws ecs update-service --cluster prod --service api --force-new-deployment
+aws eks update-kubeconfig --name my-cluster --region ap-southeast-1
+
+aws cloudformation deploy --template-file stack.yml \
+  --stack-name myapp-dev --capabilities CAPABILITY_NAMED_IAM \
+  --parameter-overrides Env=dev
+
+aws dynamodb get-item --table-name Orders \
+  --key '{"pk":{"S":"ORDER#123"}}'</pre>
+
+  <h3>Mẹo dùng CLI</h3>
+  <ul>
+    <li><code>--query</code> dùng cú pháp <strong>JMESPath</strong> lọc ngay phía client; phối hợp <code>--output table|json|text</code> (text hợp cho script).</li>
+    <li><code>--dry-run</code> (nhiều lệnh EC2) kiểm tra quyền mà không thực thi; <code>--no-cli-pager</code> tắt phân trang khi chạy trong script.</li>
+    <li>Bật autocomplete: <code>complete -C aws_completer aws</code> (bash) — gõ nhanh gấp đôi.</li>
+    <li>Không muốn cài gì: <strong>CloudShell</strong> ngay trong console đã có sẵn CLI + credential của bạn.</li>
+  </ul>
+</section>
+
+<!-- ========== 18 LỘ TRÌNH & CHỨNG CHỈ ========== -->
+<section class="doc" id="c18" data-title="18 · Lộ trình & chứng chỉ">
+  <div class="sec-head"><span class="badge">18</span><span class="sec-kicker">Lộ trình học &amp; chứng chỉ</span></div>
+  <h2>12 tuần từ số 0 đến vận hành được hệ thống thật</h2>
+
+  <div class="tblwrap"><table>
+    <thead><tr><th>Giai đoạn</th><th>Nội dung</th><th>Sản phẩm chứng minh</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Tuần 1–2</td><td>Chương 02–03: account, Region/AZ, IAM, billing. Bật MFA, Budgets, tạo user/role, cài CLI.</td><td>Account chuẩn chỉnh + checklist bảo mật tối thiểu đã tick đủ.</td></tr>
+      <tr><td class="k">Tuần 3–4</td><td>Chương 04–05: tự dựng VPC 2 AZ đủ 3 lớp subnet, EC2 + ALB + ASG, vào máy bằng SSM.</td><td>Web "hello" chạy sau ALB, scale out khi stress test.</td></tr>
+      <tr><td class="k">Tuần 5–6</td><td>Chương 06–07: S3 (versioning, lifecycle, presign), RDS Multi-AZ, ElastiCache. Ghép thành app 3 lớp.</td><td>Kiến trúc mẫu số 1 (chương 15) chạy thật.</td></tr>
+      <tr><td class="k">Tuần 7–8</td><td>Chương 08: Lambda + HTTP API + DynamoDB + SQS. Làm CRUD serverless có hàng đợi nền.</td><td>Kiến trúc mẫu số 2, kèm X-Ray tracing.</td></tr>
+      <tr><td class="k">Tuần 9–10</td><td>Chương 09 + 12: container hóa app, đẩy ECR, chạy ECS Fargate; viết lại toàn bộ bằng Terraform/CDK; pipeline GitHub Actions OIDC.</td><td>Push code → tự deploy; hạ tầng dựng lại được từ zero bằng 1 lệnh.</td></tr>
+      <tr><td class="k">Tuần 11–12</td><td>Chương 10–11 + 13–14: GuardDuty/Security Hub, dashboard + alarm, gắn thẻ chi phí, viết runbook; ôn thi chứng chỉ.</td><td>Hệ thống có giám sát + báo giá vận hành; sẵn sàng thi.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Chứng chỉ AWS — chọn cái nào</h3>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Bậc</th><th>Chứng chỉ (mã đề tại thời điểm viết)</th><th>Dành cho</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Foundational</td><td>Cloud Practitioner (CLF-C02) · AI Practitioner (AIF-C01)</td><td>Người mới/vai trò không kỹ thuật; có nền IT thì bỏ qua được.</td></tr>
+      <tr><td class="k">Associate</td><td><strong>Solutions Architect (SAA-C03)</strong> · Developer (DVA-C02) · SysOps (SOA-C02) · Data Engineer (DEA-C01) · ML Engineer (MLA-C01)</td><td><strong>SAA là lựa chọn mặc định</strong> — phủ đúng chương 02–14 của cẩm nang này, giá trị CV cao nhất bậc associate.</td></tr>
+      <tr><td class="k">Professional</td><td>Solutions Architect Pro (SAP-C02) · DevOps Engineer Pro (DOP-C02)</td><td>Sau 1–2 năm làm thật; đề tình huống dài, khó hơn hẳn.</td></tr>
+      <tr><td class="k">Specialty</td><td>Advanced Networking (ANS-C01) · Security (SCS-C02) · ML (MLS-C01)</td><td>Chuyên sâu theo mảng.</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li>Mẹo đọc đề: gạch keyword — "highly available" → Multi-AZ; "least operational overhead" → managed/serverless; "most cost-effective" → Spot/lifecycle/S3 class; "decouple" → SQS/SNS.</li>
+    <li>Luyện: <strong>AWS Skill Builder</strong> (khóa + exam prep chính chủ, có official practice question sets) và <strong>workshops.aws</strong> làm lab tay.</li>
+    <li>Mã đề và điều kiện thi thay đổi theo năm — kiểm tra trang chứng chỉ chính thức (chương 19) trước khi đăng ký.</li>
+  </ul>
+
+  <h3>4 dự án portfolio đáng tiền</h3>
+  <ol>
+    <li><strong>Web 3 lớp bằng Terraform</strong> — VPC, ALB, ASG, RDS, kèm sơ đồ + README giải thích quyết định.</li>
+    <li><strong>API serverless</strong> — Lambda + DynamoDB + Cognito, CI/CD GitHub Actions OIDC, có canary alias.</li>
+    <li><strong>Nền tảng container</strong> — ECS Fargate (hoặc EKS) + ECR + blue-green CodeDeploy + dashboard CloudWatch.</li>
+    <li><strong>Data pipeline</strong> — S3 → Glue → Athena → QuickSight, có Step Functions điều phối và cảnh báo lỗi.</li>
+  </ol>
+</section>
+
+<!-- ========== 19 NGUỒN ========== -->
+<section class="doc" id="c19" data-title="19 · Nguồn chính thức">
+  <div class="sec-head"><span class="badge">19</span><span class="sec-kicker">Nguồn chính thức &amp; lưu ý</span></div>
+  <h2>Tra ở đâu để chắc chắn đúng</h2>
+  <div class="tblwrap"><table>
+    <thead><tr><th>Nguồn</th><th>Dùng khi</th></tr></thead>
+    <tbody>
+      <tr><td class="k"><a href="https://docs.aws.amazon.com">docs.aws.amazon.com</a></td><td>Tài liệu gốc mọi dịch vụ — nơi kiểm chứng cuối cùng cho giới hạn/tính năng.</td></tr>
+      <tr><td class="k"><a href="https://aws.amazon.com/pricing/">aws.amazon.com/pricing</a> · <a href="https://calculator.aws">calculator.aws</a></td><td>Giá hiện hành theo Region + ước tính chi phí kiến trúc.</td></tr>
+      <tr><td class="k"><a href="https://aws.amazon.com/new/">aws.amazon.com/new</a> · <a href="https://aws.amazon.com/blogs/aws/">AWS News Blog</a></td><td>Tính năng mới — thứ khiến mọi tài liệu (kể cả cẩm nang này) lỗi thời.</td></tr>
+      <tr><td class="k"><a href="https://aws.amazon.com/architecture/">aws.amazon.com/architecture</a> · <a href="https://aws.amazon.com/whitepapers/">whitepapers</a></td><td>Kiến trúc tham chiếu, whitepaper Well-Architected &amp; DR.</td></tr>
+      <tr><td class="k"><a href="https://aws.amazon.com/architecture/well-architected/">Well-Architected</a></td><td>Bộ khung review workload (chương 14).</td></tr>
+      <tr><td class="k"><a href="https://skillbuilder.aws">skillbuilder.aws</a> · <a href="https://workshops.aws">workshops.aws</a></td><td>Học chính chủ + lab thực hành từng bước.</td></tr>
+      <tr><td class="k"><a href="https://aws.amazon.com/certification/">aws.amazon.com/certification</a></td><td>Mã đề, lệ phí, đăng ký thi mới nhất.</td></tr>
+      <tr><td class="k"><a href="https://github.com/aws-samples">github.com/aws-samples</a></td><td>Code mẫu chính thức cho hầu hết pattern trong cẩm nang.</td></tr>
+      <tr><td class="k"><a href="https://health.aws.amazon.com/health/status">AWS Health Dashboard</a></td><td>"AWS có đang sập không?" — kiểm tra trước khi đổ lỗi cho code của mình.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note warn"><b>Cách tự xác minh một con số trong cẩm nang này (3 bước):</b> ① giới hạn/quota → mở docs của dịch vụ, trang "Quotas", hoặc console Service Quotas; ② giá → trang pricing của dịch vụ, chọn đúng Region; ③ tính năng "mới có chưa" → tìm trong What's New. Số liệu ở đây tổng hợp đến đầu 2026 — dùng cho production hãy kiểm tra chéo.</div>
+  <p class="mini" style="margin-top:26px;color:var(--muted)">Tạo 07/2026 · Kiến thức tổng hợp từ tài liệu chính thức AWS đến 01/2026 · Luôn kiểm tra chéo với docs.aws.amazon.com trước khi áp dụng vào production.</p>
+</section>
+
+</div><!-- /.page -->
+</main>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- Tìm kiếm không dấu ---------- */
+  function strip(s){
+    return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+            .replace(/đ/g,"d").replace(/Đ/g,"D").toLowerCase();
+  }
+
+  var main = document.querySelector("main");
+  var input = document.getElementById("q");
+  var box = document.getElementById("q-results");
+  var index = [];
+
+  // Xây chỉ mục: tiêu đề ưu tiên cao hơn nội dung
+  var nodes = main.querySelectorAll("h2, h3, h4, tbody tr, li, p, pre");
+  nodes.forEach(function(el){
+    var text = (el.innerText || "").replace(/\s+/g," ").trim();
+    if(!text || text.length < 3) return;
+    var sec = el.closest("section.doc");
+    var label = sec && sec.dataset.title ? sec.dataset.title : "Giới thiệu";
+    var tag = el.tagName;
+    var prio = tag === "H2" ? 0 : tag === "H3" ? 1 : tag === "H4" ? 2 : 3;
+    index.push({ el: el, text: text, norm: strip(text), label: label, prio: prio });
+  });
+
+  function search(qraw){
+    var tokens = strip(qraw).split(/\s+/).filter(Boolean);
+    if(!tokens.length) return [];
+    var hits = [];
+    for(var i = 0; i < index.length; i++){
+      var it = index[i], ok = true;
+      for(var t = 0; t < tokens.length; t++){
+        if(it.norm.indexOf(tokens[t]) === -1){ ok = false; break; }
+      }
+      if(ok) hits.push(it);
+      if(hits.length > 400) break;
+    }
+    hits.sort(function(a, b){ return a.prio - b.prio || a.text.length - b.text.length; });
+    return hits.slice(0, 24);
+  }
+
+  function esc(s){
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+
+  function render(hits){
+    if(!hits.length){
+      box.innerHTML = '<div class="res-empty">Không tìm thấy — thử từ khóa khác (vd: "nat", "iam role", "gp3").</div>';
+      box.classList.add("open");
+      return;
+    }
+    var html = "";
+    for(var i = 0; i < hits.length; i++){
+      var t = hits[i].text;
+      if(t.length > 110) t = t.slice(0, 107) + "…";
+      html += '<button class="res" type="button" data-i="' + i + '">' +
+              '<span class="res-t">' + esc(t) + '</span>' +
+              '<span class="res-s">' + esc(hits[i].label) + '</span></button>';
+    }
+    box.innerHTML = html;
+    box.classList.add("open");
+    box._hits = hits;
+  }
+
+  function goTo(el){
+    close();
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.remove("flash");
+    void el.offsetWidth;               // restart animation
+    el.classList.add("flash");
+    setTimeout(function(){ el.classList.remove("flash"); }, 1900);
+  }
+
+  function close(){ box.classList.remove("open"); }
+
+  var timer = null;
+  input.addEventListener("input", function(){
+    clearTimeout(timer);
+    var v = input.value;
+    timer = setTimeout(function(){
+      if(strip(v).trim().length < 2){ close(); return; }
+      render(search(v));
+    }, 120);
+  });
+
+  input.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){
+      var first = box.querySelector(".res");
+      if(first && box._hits) goTo(box._hits[+first.dataset.i].el);
+    } else if(e.key === "Escape"){
+      close(); input.blur();
+    }
+  });
+
+  box.addEventListener("click", function(e){
+    var btn = e.target.closest(".res");
+    if(btn && box._hits) goTo(box._hits[+btn.dataset.i].el);
+  });
+
+  document.addEventListener("click", function(e){
+    if(!e.target.closest(".searchbox")) close();
+  });
+
+  // Phím "/" để nhảy vào ô tìm kiếm
+  document.addEventListener("keydown", function(e){
+    if(e.key === "/" && document.activeElement !== input &&
+       !/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName)){
+      e.preventDefault();
+      input.focus();
+    }
+  });
+
+  /* ---------- Scrollspy: tô sáng chương đang đọc ---------- */
+  var sections = Array.prototype.slice.call(document.querySelectorAll("section.doc"));
+  var links = {};
+  document.querySelectorAll(".ch-link").forEach(function(a){
+    links[a.getAttribute("href").slice(1)] = a;
+  });
+  var scroller = main;   // main là phần tử cuộn
+  var ticking = false;
+
+  function onScroll(){
+    if(ticking) return;
+    ticking = true;
+    requestAnimationFrame(function(){
+      ticking = false;
+      var current = null;
+      for(var i = 0; i < sections.length; i++){
+        if(sections[i].getBoundingClientRect().top <= 120) current = sections[i].id;
+        else break;
+      }
+      Object.keys(links).forEach(function(id){
+        links[id].classList.toggle("active", id === current);
+      });
+    });
+  }
+  scroller.addEventListener("scroll", onScroll, { passive: true });
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
+})();
+</script>
+</body>
+</html>
